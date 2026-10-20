@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101E33">
+<meta name="robots" content="noindex, nofollow">
+<title>Índice de Ifá — patakís, obras e ensinamentos nos 256 odus</title>
+<link rel="icon" href="assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Índice remissivo · não reproduz o texto</div>
+  <h1>Orixás, ajogun e espíritos, <em>em dois tratados</em></h1>
+  <p class="lede">Onde cada ser aparece nos patakís de <b>duas coleções distintas</b> — orixá, irunmole, egun, ajogun ou elemental — reunidos sob o mesmo odu, com a página de cada tratado.</p>
+  <div class="srcline">Fonte: <b>Colección de Ifá — Roberto Naveira</b> · 3.118 páginas · <b>256 odus</b> · 58 entradas · 4.043 referências</div>
+
+  <div class="pdfbar">
+    <div class="eyebrow">Cada título e cada página é um link para o PDF · abrir em</div>
+    <div class="srcfilter">
+      <button class="sf" data-modo="auto">Automático</button>
+      <button class="sf" data-modo="leitor">Leitor embutido</button>
+      <button class="sf" data-modo="nativo">PDF do navegador</button>
+    </div>
+    <p class="modohint" id="modohint"></p>
+  </div>
+
+  <div class="mapblock">
+    <div class="maphead">
+      <div class="eyebrow">Os 256 odus — 16 famílias, 16 colunas</div>
+      <div class="eyebrow" id="mapmeta"></div>
+    </div>
+    <div class="mapgrid" id="map"></div>
+    <div class="maplegend"><span>menos</span><div class="swatches" id="sw"></div><span>mais patakís</span></div>
+    <div id="maptip">Toque numa célula para ir ao odu.</div>
+  </div>
+</header>
+</div>
+
+<nav class="pick"><div class="wrap">
+  <div class="pickbar">
+    <div class="now"><i id="nowdot"></i><span id="nowname"></span></div>
+    <button class="togg" id="adi">Adimú</button>
+    <button class="togg" id="ewe">Ewe</button>
+    <button class="togg" id="osd">Osode</button>
+    <button class="togg" id="obr">Obras</button>
+    <button class="togg" id="ita">Meu itá</button>
+    <button class="togg" id="tax">Tipos de seres</button>
+    <button class="togg" id="togg" aria-expanded="false">Trocar</button>
+  </div>
+  <div class="panelpick" id="picker"></div>
+</div></nav>
+
+<main class="wrap" id="panel"></main>
+
+<footer><div class="wrap">
+  <b>Como usar.</b> Cada linha traz o número do patakí dentro do odu e a página do PDF. <b>O título e o número da página são links</b>: abrem o tratado exatamente naquela página — no leitor embutido o título do patakí aparece destacado. Os links já abertos ficam mais apagados, para você saber o que já leu. Leia no original — este índice só localiza, não transcreve.<br>
+  <b>Os PDFs.</b> Ficam na pasta <code>pdf/</code>, ao lado deste arquivo, com os nomes <code>naveira.pdf</code>, <code>delgado.pdf</code> e <code>verger.pdf</code>. No leitor embutido também dá para escolher os arquivos do próprio aparelho — eles ficam guardados só no navegador, não são enviados a lugar nenhum. As páginas indicadas são a numeração do arquivo PDF (página 1 = primeira folha do arquivo), não a impressa no livro.<br>
+  <b>Duas fontes.</b> <span class="tag tN">N</span> é a <i>Colección de Ifá</i> de Roberto Naveira, onde os patakís vêm numerados dentro de cada odu. <span class="tag tD">D</span> é o <i>Tratado Enciclopédico de Caminos de Ifá</i> de Yamel Delgado (2002), onde os relatos são “caminhos” com título sublinhado, boa parte deles sem numeração — nesses casos a coluna do número traz um ponto. Cada linha mostra o tratado e a página correspondente.<br>
+  <b>Como os dois foram alinhados.</b> Os tratados usam grafias diferentes para o mesmo odu — o que Naveira chama <i>Ogbe Ate</i>, Delgado chama <i>Ogbe Irete</i>. Em vez de casar por nome, cada tratado foi reduzido à grade canônica de 16×16 pela ordem interna das famílias, e a conferência bateu: 256 células em cada um, com os dois nomes exibidos lado a lado.<br>
+  <b>Cobertura.</b> Em Naveira as seções foram detectadas pelo desenho do odu na página, não pelo cabeçalho — uma primeira varredura por cabeçalho perdia onze delas. Em Delgado faltava a marca de <i>Otura Iwori</i>, que existe na <a class="pl" data-doc="D" data-p="2336" data-t="OTURA IWORI" href="pdf/delgado.pdf#page=2336">p. 2336</a> mas com o título em caixa baixa; foi reinserida à mão. A família Obara em Naveira e os odus Meji em Delgado aparecem duplicados nos respectivos PDFs.<br>
+  <b>Sobre a contagem.</b> Um patakí entra na lista quando a divindade é citada no título ou aparece com peso no corpo do relato, sempre por palavra inteira — sem isso <i>Ogún</i> casaria dentro de <i>Ogundá</i>. Elegguá, Ogún, Ozain, Oyá, Oshun, Olofin, Ori, Egun e Ikú usam limiar mais alto, porque esses nomes também aparecem nas listas de ebó sem que o relato seja sobre eles.<br>
+  <b>Ressalvas.</b> <i>Osun</i> divide grafia com o pó vermelho e o pilão ritual, então parte das ocorrências pode ser material, não divindade. <i>Oro</i> só entra por expressões de contexto (Ilé Oro, Igbó Oro, Awo Oro), já que <i>oro</i> em espanhol é ouro. <i>Ikú</i> e <i>Arun</i> não são orixás, são ajogun — entram porque o tratado os narra como personagens. Listas curtas refletem presença real: a coleção é um tratado de Ifá, não de Ocha.<br>
+  <b>Particularidades.</b> As chips douradas em cada odu classificam 2.651 ocorrências de restrição e nascimento — sem comer, sem beber, roupa, prazo de dias, hora marcada, sem sair, sem visitar, nasce aqui, signo se retira, sem cobrar — com a página da primeira. É classificação e coordenada: <b>o texto da nota não é reproduzido</b>, está na página indicada. O painel de distinções no Osode vem dos dois tratados de ire e osogbo que você enviou.<br>
+  <b>Aba “Adimú”.</b> Extraída dos verbos de oferenda dos dois tratados — <i>ponerle</i>, <i>se le pone</i>, <i>darle</i>, <i>déle</i>, <i>llevarle</i> — casando o objeto oferecido com o destinatário, que é reconhecido pelas mesmas 65 entradas de seres já mapeadas. Registra o par oferenda–destinatário, o odu e a página; a instrução completa, com quantidade e preparo, está na página indicada. Onde o tratado não nomeia o destinatário de forma reconhecível, a oferenda não entra.<br>
+  <b>Aba “Ewe”.</b> Vem de <i>Ewé — o uso das plantas na sociedade iorubá</i>, de Pierre Fatumbi Verger. Indexa nome científico, família botânica, nome iorubá e finalidade, com a página onde a planta aparece — o nome da espécie, cada página e cada encantamento são links para o Verger. Cada encantamento aparece mapeado pela finalidade a que serve — o termo iorubá (<i>àwúre owó</i>, <i>idáàbòbò lówó ikú</i>), a tradução, o número da fórmula quando Verger o dá e a página. O <b>texto do ofò não é reproduzido</b>, nem os modos de preparo — são o conteúdo do livro, e estão na página indicada. Os nomes iorubás vieram do glossário final (pp. 561–618), cujo OCR de colunas veio embaralhado. Reconstruí por três métodos — corte de colunas com conferência de contagem, pareamento por coordenada vertical e leitura bruta — e depois <b>validei cada par contra o corpo do livro</b>: só entrou o nome iorubá que aparece a menos de 700 caracteres da citação da espécie no texto corrido. Dos 414 candidatos, 189 passaram e 225 foram descartados. As finalidades são dedução minha a partir de termos como <i>àwúre owó</i> ou <i>iségun òtá</i> no bloco de cada planta.<br>
+  <b>Aba “Obras”.</b> Os rótulos são os cabeçalhos como aparecem na fonte — é neles que a finalidade está escrita, e por isso servem de busca. O conteúdo do procedimento não é reproduzido: abra a página indicada e leia no original. A classificação por finalidade é minha, deduzida de palavras do cabeçalho, e cobre cerca de 44% das entradas; um cabeçalho sem finalidade detectada não é um cabeçalho sem finalidade. Ebós genéricos, que são listas de ingredientes sem enunciado, ficaram de fora por não haver o que indexar.<br>
+  <b>O que o odu diz.</b> Refranes, provérbios, “dice Ifá”, ire e osobo, profecia ética, tótem, cavilação e dualidade aparecem ao pé de cada odu apenas como presença e página. A diferença é de natureza: o título de um patakí é um rótulo que aponta para a história, enquanto um refrán <i>é</i> o conteúdo e não aponta para nada — então indico onde está em vez de copiá-lo.<br>
+  <b>Aba “Meu itá”.</b> Traz todos os patakís das oito casas do seu registro, sem filtro de entidade — a marca ao lado do título indica quando aquele relato cita nominalmente o orixá recebido, e o cabeçalho informa quantas vezes ele aparece na seção inteira, incluindo rezos e obras fora dos patakís. Note que <i>Inle</i> divide grafia com <i>ilé</i>, terra ou casa em iorubá; cerca de 9% das ocorrências são dessa construção e não do orixá.<br>
+  <b>Ajogun.</b> Alguns nomes foram deixados de fora por colisão de grafia impossível de resolver com segurança: <i>Ano</i> se confunde com o espanhol <i>año</i>, e <i>Ese</i> com <i>ese Ifá</i>, o verso. Arun cobre a doença; a perda está em Ofo.<br>
+  <b>Caminhos.</b> Os avatares marcados vêm da menção literal do nome no relato — servem de pista, não de classificação fechada.
+</div></footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

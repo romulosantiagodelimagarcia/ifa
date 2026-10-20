@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101E33">
+<meta name="robots" content="noindex, nofollow">
+<title>Leitor — Índice de Ifá</title>
+<link rel="icon" href="assets/icone.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/leitor.css">
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <div class="row">
+    <a class="btn back" href="index.html" title="Voltar ao índice">‹ Índice</a>
+    <div class="ctx">
+      <span class="doc" id="docname">Leitor</span>
+      <span class="ttl" id="ctx"></span>
+    </div>
+    <button class="btn" id="menubtn" aria-expanded="false" aria-controls="menu" title="Mais opções">⋯</button>
+  </div>
+  <div class="row ctrls" id="ctrls" hidden>
+    <div class="grp">
+      <button class="btn" id="prev" aria-label="Página anterior">‹</button>
+      <label class="pgbox"><span class="sr">Página</span><input id="pgin" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Ir para a página"><span id="pgtot">/ —</span></label>
+      <button class="btn" id="next" aria-label="Próxima página">›</button>
+    </div>
+    <button class="btn ghost" id="backtgt" title="Voltar à página do link" hidden>↺ p. <span id="tgtp"></span></button>
+    <div class="grp">
+      <button class="btn" id="zout" aria-label="Diminuir">−</button>
+      <span class="zl" id="zl">100%</span>
+      <button class="btn" id="zin" aria-label="Aumentar">+</button>
+    </div>
+  </div>
+  <nav class="menu" id="menu" hidden>
+    <a class="mi" id="native" href="#" target="_blank">Abrir esta página no visualizador do navegador ↗</a>
+    <button class="mi" id="files">Arquivos PDF…</button>
+    <div class="mi docsw">Ir para:
+      <button class="chipd" data-go="N">Naveira</button>
+      <button class="chipd" data-go="D">Delgado</button>
+      <button class="chipd" data-go="V">Verger</button>
+    </div>
+  </nav>
+  <div class="prog" id="prog" hidden><i id="progbar"></i></div>
+</header>
+
+<main id="pages" class="pages"></main>
+
+<section class="setup" id="setup" hidden>
+  <div class="eyebrow" id="setupeyebrow">Arquivos PDF</div>
+  <h1 id="setuptitle">O leitor precisa dos PDFs</h1>
+  <p id="setupmsg">Escolha os arquivos no aparelho. Pode marcar os três de uma vez: o leitor reconhece cada um pelo número de páginas.</p>
+  <button class="big" id="pick">Escolher PDFs do aparelho</button>
+  <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
+  <ul class="dl" id="doclist"></ul>
+  <p class="fine">Os arquivos ficam guardados <b>só neste navegador</b> e não são enviados a lugar nenhum. Basta escolher uma vez por aparelho/navegador.<br>
+  No computador também dá para colocá-los na pasta <code>pdf/</code>, ao lado do <code>index.html</code>, com os nomes <code>naveira.pdf</code>, <code>delgado.pdf</code> e <code>verger.pdf</code>.</p>
+  <button class="btn ghost" id="closesetup" hidden>Voltar à página</button>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/pdfjs/pdf.min.js"></script>
+<script src="assets/leitor.js"></script>
+</body>
+</html>

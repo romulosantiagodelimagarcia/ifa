@@ -1,0 +1,5 @@
+# Os PDFs dos tratados ficam só na sua máquina — não vão para o repositório.
+pdf/*.pdf
+pdf/*.PDF
+.DS_Store
+Thumbs.db
