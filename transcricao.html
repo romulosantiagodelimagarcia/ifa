@@ -18,7 +18,8 @@
 </header>
 <main>
   <nav class="tabs" aria-label="Tipo de transcrição">
-    <button type="button" id="pataki-tab" aria-pressed="true">Por odu</button>
+    <button type="button" id="pataki-tab" aria-pressed="true">Patakís</button>
+    <button type="button" id="subitem-tab" aria-pressed="false">Obras e subitens</button>
     <button type="button" id="ewe-tab" aria-pressed="false">Ewé indexado</button>
     <button type="button" id="full-tab" aria-pressed="false">Texto completo</button>
   </nav>
@@ -30,13 +31,28 @@
     <div class="source-grid">
       <article class="source-card">
         <header><h2>Naveira</h2><p id="n-coverage" class="source-coverage"></p></header>
-        <p id="n-range" class="section-range"></p>
         <div id="n-content"></div>
       </article>
       <article class="source-card">
         <header><h2>Delgado</h2><p id="d-coverage" class="source-coverage"></p></header>
-        <p id="d-range" class="section-range"></p>
         <div id="d-content"></div>
+      </article>
+    </div>
+  </section>
+  <section id="subitem-view" hidden>
+    <label for="work-odu">Odu</label>
+    <select id="work-odu"></select>
+    <label for="subitem-search">Buscar título ou tipo</label>
+    <input id="subitem-search" type="search" autocomplete="off">
+    <p id="subitem-count" class="coverage" aria-live="polite"></p>
+    <div class="source-grid">
+      <article class="source-card">
+        <header><h2>Naveira</h2></header>
+        <div id="n-subitems"></div>
+      </article>
+      <article class="source-card">
+        <header><h2>Delgado</h2></header>
+        <div id="d-subitems"></div>
       </article>
     </div>
   </section>

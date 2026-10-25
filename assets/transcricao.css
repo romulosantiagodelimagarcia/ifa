@@ -69,6 +69,14 @@ select, input[type=search], input[type=number] {
 .section-range { margin: 12px 0 0; color: var(--accent); }
 .page { border-top: 1px solid var(--line); padding: 16px 0; }
 .page:first-child { border-top: 0; }
+.transcript-item { border-top: 1px solid var(--line); padding: 18px 0; }
+.transcript-item:first-child { border-top: 0; }
+.transcript-item h3 { margin: 0 0 6px; font-size: 1.14rem; }
+.transcript-item .item-meta { margin: 0 0 10px; color: var(--muted); font-size: .85rem; }
+.transcript-item .item-review { display: inline-block; margin: 0 0 10px; color: #8b3d2c; font-size: .85rem; font-weight: 600; }
+.transcript-item .item-pages { margin: 10px 0 0; padding-top: 10px; border-top: 1px dashed var(--line); }
+.transcript-item .item-pages > p { margin: 0 0 4px; color: var(--muted); font: 12px/1.4 "IBM Plex Mono", monospace; }
+.transcript-item pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.7 "IBM Plex Sans", sans-serif; }
 .page a, .ewe-page a, .full-page a { display: inline-block; margin-bottom: 8px; color: var(--accent); font-family: "IBM Plex Mono", monospace; font-size: .85rem; text-decoration: none; }
 .page a:hover, .ewe-page a:hover, .full-page a:hover { text-decoration: underline; }
 .page pre, .ewe-page pre, .full-page pre {

@@ -6,6 +6,7 @@
     const oduByCell = new Map(data.odus.map(odu => [odu.cell, odu]));
     const views = {
       'pataki-tab': 'pataki-view',
+      'subitem-tab': 'subitem-view',
       'ewe-tab': 'ewe-view',
       'full-tab': 'full-view'
     };
@@ -15,6 +16,7 @@
       option.value = odu.cell;
       option.textContent = `${odu.names.N} / ${odu.names.D}`;
       oduSelect.append(option);
+      $('work-odu').append(option.cloneNode(true));
     }
 
     function normalize(value) {
@@ -41,42 +43,92 @@
       return link;
     }
 
-    function renderPages(container, source, pages, title) {
+    function renderEntries(container, entries, source, emptyMessage) {
       container.replaceChildren();
-      if (!pages?.length) {
+      if (!entries.length) {
         const message = document.createElement('p');
         message.className = 'empty';
-        message.textContent = 'Nenhum trecho indexado para esta fonte.';
+        message.textContent = emptyMessage;
         container.append(message);
         return;
       }
-      for (const pageNumber of pages) {
-        const textContent = data.sources[source].textPages[pageNumber];
-        if (!textContent) continue;
-        const section = document.createElement('section');
-        section.className = 'page';
-        section.append(pageLink(source, pageNumber, title));
-        const text = document.createElement('pre');
-        text.textContent = textContent;
-        section.append(text);
-        container.append(section);
+      for (const entry of entries) {
+        const article = document.createElement('article');
+        article.className = 'transcript-item';
+        const title = document.createElement('h3');
+        title.textContent = `${entry.number ? `${entry.number}. ` : ''}${entry.title}`;
+        article.append(title);
+        const pageRange = entry.start === entry.end
+          ? `p. ${entry.start}`
+          : `pp. ${entry.start}–${entry.end}`;
+        const meta = document.createElement('p');
+        meta.className = 'item-meta';
+        meta.textContent = [
+          entry.category,
+          entry.purposes?.length ? entry.purposes.join(' · ') : '',
+          pageRange
+        ].filter(Boolean).join(' · ');
+        article.append(meta, pageLink(source, entry.start, entry.title));
+        if (entry.status !== 'matched') {
+          const review = document.createElement('p');
+          review.className = 'item-review';
+          review.textContent = entry.titleMatches
+            ? 'Título repetido na página; confira o trecho no PDF.'
+            : 'Título não localizado automaticamente; confira o trecho no PDF.';
+          article.append(review);
+        }
+        for (const page of entry.pages) {
+          const block = document.createElement('section');
+          block.className = 'item-pages';
+          if (page.page !== entry.start) {
+            const pageLabel = document.createElement('p');
+            pageLabel.textContent = `Continuação · p. ${page.page}`;
+            block.append(pageLabel);
+          }
+          const text = document.createElement('pre');
+          text.textContent = page.text;
+          block.append(text);
+          article.append(block);
+        }
+        container.append(article);
       }
     }
 
     function renderOdu(cell) {
       const odu = oduByCell.get(cell) || data.odus[0];
       oduSelect.value = odu.cell;
+      $('work-odu').value = odu.cell;
       for (const source of ['N', 'D']) {
-        const section = odu.sources[source];
-        const pages = section?.pages || [];
-        renderPages($(`${source === 'N' ? 'n' : 'd'}-content`), source, pages, odu.names[source]);
-        $(`${source === 'N' ? 'n' : 'd'}-range`).textContent = section
-          ? `Páginas ${section.start}–${section.end} · ${pages.length} páginas transcritas`
-          : 'Sem trecho indexado neste odu.';
+        const entries = data.entries.patakis.filter(entry =>
+          entry.cell === odu.cell && entry.source === source);
+        renderEntries(
+          $(`${source === 'N' ? 'n' : 'd'}-content`),
+          entries,
+          source,
+          'Nenhum patakí indexado para esta fonte neste odu.'
+        );
       }
       $('odu-coverage').textContent =
-        'Trechos agrupados por odu. Os textos completos estão na aba “Texto completo”.';
+        'Cada trecho começa no título indexado e termina antes do próximo título detectado nesse odu. Itens com aviso precisam de conferência no PDF.';
       history.replaceState(null, '', `#odu=${encodeURIComponent(odu.cell)}`);
+    }
+
+    function renderSubitems(cell, query) {
+      const odu = oduByCell.get(cell) || data.odus[0];
+      $('work-odu').value = odu.cell;
+      const needle = normalize(query.trim());
+      const matches = data.entries.subitems.filter(entry =>
+        entry.cell === odu.cell &&
+        (!needle || normalize(`${entry.title} ${entry.category}`).includes(needle)));
+      $('subitem-count').textContent = `${matches.length} subitens neste odu`;
+      for (const source of ['N', 'D']) {
+        renderEntries(
+          $(`${source === 'N' ? 'n' : 'd'}-subitems`),
+          matches.filter(entry => entry.source === source),
+          source,
+          'Nenhum subitem indexado para esta fonte neste odu.'
+        );
+      }
     }
 
     function renderEwe(query) {
@@ -175,10 +227,13 @@
           $(otherTab).setAttribute('aria-pressed', String(otherView === viewId));
         }
         if (viewId === 'ewe-view') renderEwe($('ewe-search').value);
+        if (viewId === 'subitem-view') renderSubitems($('work-odu').value, $('subitem-search').value);
       });
     }
 
     oduSelect.addEventListener('change', () => renderOdu(oduSelect.value));
+    $('work-odu').addEventListener('change', () => renderSubitems($('work-odu').value, $('subitem-search').value));
+    $('subitem-search').addEventListener('input', () => renderSubitems($('work-odu').value, $('subitem-search').value));
     $('ewe-search').addEventListener('input', () => renderEwe($('ewe-search').value));
     $('full-source').addEventListener('change', () => {
       $('search-results').replaceChildren();
@@ -201,10 +256,17 @@
       searchTimer = setTimeout(() => searchFullText($('full-search').value), 150);
     });
 
-    $('transcript-coverage').textContent = ['N', 'D', 'V'].map(source => {
+    const pageCoverage = ['N', 'D', 'V'].map(source => {
       const sourceData = data.sources[source];
       return `${sourceData.title}: ${Object.keys(sourceData.textPages).length.toLocaleString('pt-BR')}/${sourceData.pages.toLocaleString('pt-BR')} páginas`;
-    }).join(' · ');
+    });
+    const titleCoverage = ['patakis', 'subitems'].map(kind => {
+      const entries = data.entries[kind];
+      const matched = entries.filter(entry => entry.status === 'matched').length;
+      const label = kind === 'patakis' ? 'patakís' : 'subitens';
+      return `${matched.toLocaleString('pt-BR')}/${entries.length.toLocaleString('pt-BR')} ${label} com título localizado`;
+    });
+    $('transcript-coverage').textContent = [...pageCoverage, ...titleCoverage].join(' · ');
     for (const source of ['N', 'D']) {
       const sourceData = data.sources[source];
       $(`${source === 'N' ? 'n' : 'd'}-coverage`).textContent =

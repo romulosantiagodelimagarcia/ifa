@@ -19,6 +19,12 @@ Cada página tem um link para o leitor PDF e a interface informa a cobertura de 
 permanecem identificadas separadamente: a extração não presume que histórias em páginas semelhantes
 sejam correspondentes nem determina com segurança os limites de cada narrativa individual.
 
+Os workers `tools/workers/patakis.js` e `tools/workers/subitens.js` vinculam os títulos do índice aos
+textos das páginas indicadas e recortam cada trecho até o próximo título localizado no mesmo odu e
+fonte. Títulos ausentes ou repetidos ficam marcados para conferência manual no PDF. O corte automático
+é uma proposta baseada no índice e no texto extraído; não substitui a revisão de OCR nem confirma
+sozinho os limites semânticos de uma narrativa.
+
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 
 ```
@@ -27,7 +33,8 @@ node tools/transcrever.js
 
 O extrator valida os 256 pontos de início de odu de cada tratado e extrai o texto reconhecível de todas
 as páginas dos três PDFs, incluindo as 618 páginas do Verger. Os textos de cada fonte são armazenados
-uma única vez; o agrupamento por odu e o índice de Ewé referenciam essas páginas. Checkpoints locais
+uma única vez; os trechos por título, o agrupamento por odu e o índice de Ewé referenciam essas páginas.
+Checkpoints locais
 permitem retomar uma execução interrompida. O estado temporário fica em `tools/.transcricao-state/`
 e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá de Ewé vêm do índice.
 O resultado é `assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.

@@ -70,7 +70,6 @@ function segmentEntries(entries, sources) {
     entry.titleMatches = match.matchCount;
     entry.status = match.matchCount === 1 ? 'matched' : 'needs-review';
     entry.startOffset = match.matchCount ? match.start : 0;
-    entry.endOffset = null;
     const key = `${entry.source}:${entry.cell}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(entry);
@@ -82,7 +81,7 @@ function segmentEntries(entries, sources) {
     for (let i = 0; i < group.length; i++) {
       const entry = group[i];
       const next = group.slice(i + 1).find(candidate =>
-        candidate.status === 'matched' &&
+        candidate.titleMatches > 0 &&
         (candidate.start > entry.start ||
           (candidate.start === entry.start && candidate.startOffset > entry.startOffset)));
       const pages = [];
@@ -97,7 +96,6 @@ function segmentEntries(entries, sources) {
       }
       entry.pages = pages;
       delete entry.startOffset;
-      delete entry.endOffset;
       delete entry.catalogOrder;
     }
   }
