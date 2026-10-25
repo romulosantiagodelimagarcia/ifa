@@ -9,17 +9,17 @@ em yoruba-tonos-aprovados.json podem ser aplicadas a uma cópia da transcrição
 import argparse
 import collections
 import datetime
+import gzip
 import json
 import pathlib
 import re
 import unicodedata
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-TRANSCRIPT = ROOT / "assets" / "transcricoes.js"
+TRANSCRIPT = ROOT / "assets" / "transcricoes.json.gz"
 APPROVED = pathlib.Path(__file__).with_name("yoruba-tonos-aprovados.json")
 OUTPUT = ROOT / "assets" / "yoruba-tonos-revisao.json"
 TOKEN = re.compile(r"[^\W\d_]+", re.UNICODE)
-DATA = re.compile(r"window\.IFA_TRANSCRIPT=(.*);\s*$", re.S)
 STOPWORDS = {
     "a", "ao", "aos", "as", "com", "como", "da", "das", "de", "del", "do",
     "dos", "el", "en", "es", "la", "las", "los", "na", "no", "nos", "o",
@@ -35,11 +35,11 @@ def plain(word):
 
 
 def read_data():
-    text = TRANSCRIPT.read_text(encoding="utf-8")
-    match = DATA.search(text)
-    if not match:
-        raise SystemExit(f"Dados de transcrição não encontrados em {TRANSCRIPT}")
-    return json.loads(match.group(1))
+    if not TRANSCRIPT.exists():
+        raise SystemExit(f"Dados de transcrição não encontrados em {TRANSCRIPT}; "
+                         "execute node tools/transcrever.js")
+    with gzip.open(TRANSCRIPT, "rt", encoding="utf-8") as stream:
+        return json.load(stream)
 
 
 def build_lexicon(data):
@@ -139,7 +139,7 @@ def main():
     proposals = collect_proposals(data, lexicon)
     OUTPUT.write_text(json.dumps({
         "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "reference": "Nomes yorùbá indexados em assets/transcricoes.js (Ewé/Verger)",
+        "reference": "Nomes yorùbá indexados em assets/transcricoes.json.gz (Ewé/Verger)",
         "reviewed": False,
         "proposals": proposals
     }, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -148,12 +148,8 @@ def main():
     if args.apply_approved:
         approved = json.loads(APPROVED.read_text(encoding="utf-8"))
         changed = apply_approved(data, approved, lexicon)
-        TRANSCRIPT.write_text(
-            "/* Gerado por tools/transcrever.js; tons aprovados aplicados por "
-            "tools/restaurar_tons.py. */\nwindow.IFA_TRANSCRIPT=" +
-            json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n",
-            encoding="utf-8"
-        )
+        with gzip.open(TRANSCRIPT, "wt", encoding="utf-8", compresslevel=9) as stream:
+            json.dump(data, stream, ensure_ascii=False, separators=(",", ":"))
         print(f"{changed} ocorrências revisadas aplicadas à transcrição")
 
 

@@ -3,11 +3,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const zlib = require('node:zlib');
 const pdfjs = require('../vendor/pdfjs/pdf.min.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const INPUT = path.join(ROOT, 'fonte', 'ifa-indice-completo-final.html');
-const OUTPUT = path.join(ROOT, 'assets', 'transcricoes.js');
+const OUTPUT = path.join(ROOT, 'assets', 'transcricoes.json.gz');
 const STATE_DIR = path.join(__dirname, '.transcricao-state');
 const SESSION_FILE = path.join(STATE_DIR, 'session.json');
 const LOCK_DIR = path.join(STATE_DIR, 'lock');
@@ -234,10 +235,9 @@ async function main() {
     console.log(`${metadata.title}: ${wantedPages.size} páginas extraídas`);
   }
 
-  const output = `/* Gerado por tools/transcrever.js; não editar à mão. */\n` +
-    `window.IFA_TRANSCRIPT=${JSON.stringify(result)};\n`;
+  const output = zlib.gzipSync(JSON.stringify(result), { level: 9 });
   fs.writeFileSync(OUTPUT, output);
-  console.log(`${path.relative(ROOT, OUTPUT)}: ${Buffer.byteLength(output)} bytes`);
+  console.log(`${path.relative(ROOT, OUTPUT)}: ${output.byteLength} bytes compactados`);
   session.status = 'completed';
   saveSession(session);
   } finally {

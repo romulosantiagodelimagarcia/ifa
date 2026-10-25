@@ -28,11 +28,16 @@ node tools/transcrever.js
 O extrator valida os 256 pontos de início de odu de cada tratado, separa o texto até o próximo odu e
 grava checkpoints locais para retomar uma execução interrompida. O estado temporário fica em
 `tools/.transcricao-state/` e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá
-de Ewé vêm do índice; os trechos do Verger são extraídos das páginas mapeadas.
+de Ewé vêm do índice; os trechos do Verger são extraídos das páginas mapeadas. O resultado é
+`assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.
+
+Como a transcrição é carregada via `fetch`, abra o site por HTTP, não diretamente por `file://`.
+Para testar localmente, use `python3 -m http.server 8000` e visite
+<http://localhost:8000/transcricao.html>.
 
 ### Revisão dos tons yorùbá
 
-Depois de gerar `assets/transcricoes.js`, execute `python3 tools/restaurar_tons.py`. O worker cria
+Depois de gerar `assets/transcricoes.json.gz`, execute `python3 tools/restaurar_tons.py`. O worker cria
 `assets/yoruba-tonos-revisao.json` com sugestões apoiadas pelos nomes yorùbá indexados no Verger.
 Como uma mesma palavra sem marcas pode ter leituras diferentes, sugestões não são aplicadas sem
 revisão. Inclua apenas substituições confirmadas em `tools/yoruba-tonos-aprovados.json` e execute
@@ -106,7 +111,8 @@ transcricao.html           transcrições por odu e Ewé
 leitor.html                leitor de PDF embutido
 assets/app.js              lógica do índice + geração dos links de página
 assets/data.js             dados do índice (gerado — não editar à mão)
-assets/transcricoes.js     transcrições extraídas dos PDFs (gerado)
+assets/transcricoes.json.gz texto transcrito comprimido (gerado)
+assets/transcricoes.js     carrega e descompacta o texto no navegador
 assets/transcricao.js      interface das transcrições
 assets/leitor.js|.css      leitor
 assets/style.css           estilo do índice

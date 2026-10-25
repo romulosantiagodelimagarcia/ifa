@@ -1,6 +1,5 @@
 (() => {
-  const data = window.IFA_TRANSCRIPT;
-  if (!data) return;
+  window.IFA_TRANSCRIPT_READY.then(data => {
   const $ = id => document.getElementById(id);
   const params = new URLSearchParams(location.hash.slice(1));
   const oduSelect = $('odu');
@@ -97,4 +96,10 @@
   oduSelect.addEventListener('change', () => renderOdu(oduSelect.value));
   $('ewe-search').addEventListener('input', () => renderEwe($('ewe-search').value));
   renderOdu(oduByCell.has(params.get('odu')) ? params.get('odu') : data.odus[0].cell);
+  }).catch(error => {
+    const message = document.createElement('p');
+    message.className = 'empty';
+    message.textContent = `Não foi possível carregar as transcrições: ${error.message}`;
+    document.querySelector('main').append(message);
+  });
 })();
