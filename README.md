@@ -10,6 +10,31 @@ página funcionando como link que abre o PDF exatamente naquela página**:
 O site é estático (HTML + JS, sem servidor e sem build) e funciona sem internet. Os dados vêm, sem
 alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 
+## Transcrições
+
+`transcricao.html` apresenta por odu o texto extraído em listas independentes de Naveira e Delgado,
+sem presumir que histórias em páginas semelhantes sejam correspondentes. A aba Ewé mostra as páginas
+do Verger indexadas por espécie. Cada página transcrita tem um link para o leitor PDF.
+
+Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
+
+```
+node tools/transcrever.js
+```
+
+O extrator valida os 256 pontos de início de odu de cada tratado, separa o texto até o próximo odu e
+grava checkpoints locais para retomar uma execução interrompida. O estado temporário fica em
+`tools/.transcricao-state/` e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá
+de Ewé vêm do índice; os trechos do Verger são extraídos das páginas mapeadas.
+
+### Revisão dos tons yorùbá
+
+Depois de gerar `assets/transcricoes.js`, execute `python3 tools/restaurar_tons.py`. O worker cria
+`assets/yoruba-tonos-revisao.json` com sugestões apoiadas pelos nomes yorùbá indexados no Verger.
+Como uma mesma palavra sem marcas pode ter leituras diferentes, sugestões não são aplicadas sem
+revisão. Inclua apenas substituições confirmadas em `tools/yoruba-tonos-aprovados.json` e execute
+`python3 tools/restaurar_tons.py --apply-approved` para aplicá-las.
+
 ## 1. Colocar os PDFs
 
 Copie os três PDFs para a pasta `pdf/` com estes nomes:
@@ -74,15 +99,20 @@ Antes, saiba que:
 
 ```
 index.html                 índice (todas as abas do original)
+transcricao.html           transcrições por odu e Ewé
 leitor.html                leitor de PDF embutido
 assets/app.js              lógica do índice + geração dos links de página
 assets/data.js             dados do índice (gerado — não editar à mão)
+assets/transcricoes.js     transcrições extraídas dos PDFs (gerado)
+assets/transcricao.js      interface das transcrições
 assets/leitor.js|.css      leitor
 assets/style.css           estilo do índice
 assets/fonts.css, fonts/   IBM Plex Sans/Mono e Fraunces locais (SIL OFL)
 vendor/pdfjs/              PDF.js 3.11.174 (Apache-2.0)
 fonte/                     índice original (fonte dos dados)
 tools/extrair_dados.py     regenera assets/data.js a partir do índice original
+tools/transcrever.js       extrai texto dos PDFs por odu e por página do Ewé
+tools/restaurar_tons.py    worker de sugestões e aplicação revisada de tons
 pdf/                       seus PDFs (fora do git)
 ```
 
