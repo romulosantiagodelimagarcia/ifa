@@ -12,12 +12,12 @@ alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 
 ## Transcrições
 
-`transcricao.html` apresenta por odu o texto extraído em listas independentes de Naveira e Delgado,
-sem presumir que histórias em páginas semelhantes sejam correspondentes. A aba Ewé mostra as páginas
-do Verger indexadas por espécie. Cada página transcrita tem um link para o leitor PDF. A separação
-automática estabelece limites de odu e preserva a paginação; ela não determina com segurança o
-começo e o fim de cada narrativa individual, que ainda exigem conferência antes de uma publicação
-como transcrições separadas por patakí.
+`transcricao.html` reúne o texto extraído de todas as páginas de Naveira, Delgado e Verger. A aba
+“Texto completo” permite trocar de obra, navegar por página e pesquisar no texto; “Por odu” agrupa
+trechos de Naveira e Delgado, e “Ewé indexado” continua mostrando as páginas relacionadas às espécies.
+Cada página tem um link para o leitor PDF e a interface informa a cobertura de cada obra. As fontes
+permanecem identificadas separadamente: a extração não presume que histórias em páginas semelhantes
+sejam correspondentes nem determina com segurança os limites de cada narrativa individual.
 
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 
@@ -25,11 +25,14 @@ Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 node tools/transcrever.js
 ```
 
-O extrator valida os 256 pontos de início de odu de cada tratado, separa o texto até o próximo odu e
-grava checkpoints locais para retomar uma execução interrompida. O estado temporário fica em
-`tools/.transcricao-state/` e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá
-de Ewé vêm do índice; os trechos do Verger são extraídos das páginas mapeadas. O resultado é
-`assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.
+O extrator valida os 256 pontos de início de odu de cada tratado e extrai o texto reconhecível de todas
+as páginas dos três PDFs, incluindo as 618 páginas do Verger. Os textos de cada fonte são armazenados
+uma única vez; o agrupamento por odu e o índice de Ewé referenciam essas páginas. Checkpoints locais
+permitem retomar uma execução interrompida. O estado temporário fica em `tools/.transcricao-state/`
+e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá de Ewé vêm do índice.
+O resultado é `assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.
+“Todas as páginas” significa que todas foram processadas: páginas sem camada de texto reconhecível
+fazem o extrator parar com erro, e o texto extraído ainda pode conter falhas de OCR.
 
 Como a transcrição é carregada via `fetch`, abra o site por HTTP, não diretamente por `file://`.
 Para testar localmente, use `python3 -m http.server 8000` e visite
@@ -111,7 +114,7 @@ transcricao.html           transcrições por odu e Ewé
 leitor.html                leitor de PDF embutido
 assets/app.js              lógica do índice + geração dos links de página
 assets/data.js             dados do índice (gerado — não editar à mão)
-assets/transcricoes.json.gz texto transcrito comprimido (gerado)
+assets/transcricoes.json.gz texto extraído comprimido (gerado)
 assets/transcricoes.js     carrega e descompacta o texto no navegador
 assets/transcricao.js      interface das transcrições
 assets/leitor.js|.css      leitor
