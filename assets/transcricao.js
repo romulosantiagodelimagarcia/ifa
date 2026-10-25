@@ -112,9 +112,10 @@
       $('full-coverage').textContent =
         `${sourceData.title} · ${available.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')} páginas transcritas`;
       $('full-page-title').textContent = `${sourceData.title} · página ${pageNumber}`;
+      const previousLink = $('full-page-link');
       const link = pageLink(source, pageNumber, sourceData.title);
       link.id = 'full-page-link';
-      $('full-page-link').replaceWith(link);
+      previousLink.replaceWith(link);
       $('full-page-text').textContent = pages[pageNumber] || 'Não há texto reconhecido nesta página.';
     }
 
