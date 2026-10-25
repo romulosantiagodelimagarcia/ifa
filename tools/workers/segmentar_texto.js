@@ -69,7 +69,11 @@ function segmentEntries(entries, sources) {
     const match = findTitle(entry.source, entry.start, entry.title);
     entry.titleMatches = match.matchCount;
     entry.status = match.matchCount === 1 ? 'matched' : 'needs-review';
+    if (entry.status !== 'matched') {
+      entry.reviewReason = match.matchCount ? 'title-repeated' : 'title-not-found';
+    }
     entry.startOffset = match.matchCount ? match.start : 0;
+    entry.titleEndOffset = match.matchCount ? match.end : 0;
     const key = `${entry.source}:${entry.cell}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(entry);
@@ -78,24 +82,52 @@ function segmentEntries(entries, sources) {
   for (const group of groups.values()) {
     group.sort((a, b) =>
       a.start - b.start || a.startOffset - b.startOffset || a.catalogOrder - b.catalogOrder);
+    for (let i = 0; i < group.length - 1; i++) {
+      const current = group[i];
+      const next = group[i + 1];
+      if (current.titleMatches > 0 && next.titleMatches > 0 &&
+          current.start === next.start &&
+          next.startOffset < current.titleEndOffset) {
+        current.status = 'needs-review';
+        current.reviewReason = 'title-overlap';
+        next.status = 'needs-review';
+        next.reviewReason = 'title-overlap';
+      }
+    }
     for (let i = 0; i < group.length; i++) {
       const entry = group[i];
       const next = group.slice(i + 1).find(candidate =>
         candidate.titleMatches > 0 &&
         (candidate.start > entry.start ||
-          (candidate.start === entry.start && candidate.startOffset > entry.startOffset)));
+          (candidate.start === entry.start &&
+            candidate.startOffset >= entry.titleEndOffset)));
+      const missingBoundary = group.slice(i + 1).find(candidate =>
+        candidate.titleMatches === 0 &&
+        candidate.start > entry.start &&
+        candidate.start <= entry.end);
+      if (missingBoundary && entry.status === 'matched') {
+        entry.status = 'needs-review';
+        entry.reviewReason = 'next-title-not-found';
+      }
       const pages = [];
-      const finalPage = next && next.start <= entry.end ? next.start : entry.end;
+      let finalPage = next && next.start <= entry.end ? next.start : entry.end;
+      if (missingBoundary) finalPage = Math.min(finalPage, missingBoundary.start);
       for (let pageNumber = entry.start; pageNumber <= finalPage; pageNumber++) {
         const text = sources[entry.source].textPages[pageNumber];
         if (typeof text !== 'string') continue;
         const start = pageNumber === entry.start ? entry.startOffset : 0;
-        const end = next && next.start === pageNumber ? next.startOffset : text.length;
+        const end = missingBoundary && missingBoundary.start === pageNumber &&
+          missingBoundary.start > entry.start
+          ? 0
+          : next && next.start === pageNumber && next.start <= finalPage
+            ? next.startOffset
+            : text.length;
         const excerpt = text.slice(start, Math.max(start, end)).trim();
         if (excerpt) pages.push({ page: pageNumber, text: excerpt });
       }
       entry.pages = pages;
       delete entry.startOffset;
+      delete entry.titleEndOffset;
       delete entry.catalogOrder;
     }
   }

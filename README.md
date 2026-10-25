@@ -13,17 +13,17 @@ alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 ## Transcrições
 
 `transcricao.html` reúne o texto extraído de todas as páginas de Naveira, Delgado e Verger. A aba
-“Texto completo” permite trocar de obra, navegar por página e pesquisar no texto; “Por odu” agrupa
-trechos de Naveira e Delgado, e “Ewé indexado” continua mostrando as páginas relacionadas às espécies.
-Cada página tem um link para o leitor PDF e a interface informa a cobertura de cada obra. As fontes
-permanecem identificadas separadamente: a extração não presume que histórias em páginas semelhantes
-sejam correspondentes nem determina com segurança os limites de cada narrativa individual.
+“Patakís” e a aba “Obras e subitens” mostram cada título junto do trecho correspondente, agrupado por
+odu e separado por fonte. “Texto completo” permite trocar de obra, navegar por página e pesquisar no
+texto; “Ewé indexado” mostra as páginas relacionadas às espécies. Cada trecho tem link para o leitor
+PDF e os indicadores mostram a cobertura das páginas e dos títulos localizados. As fontes permanecem
+identificadas separadamente.
 
 Os workers `tools/workers/patakis.js` e `tools/workers/subitens.js` vinculam os títulos do índice aos
 textos das páginas indicadas e recortam cada trecho até o próximo título localizado no mesmo odu e
-fonte. Títulos ausentes ou repetidos ficam marcados para conferência manual no PDF. O corte automático
-é uma proposta baseada no índice e no texto extraído; não substitui a revisão de OCR nem confirma
-sozinho os limites semânticos de uma narrativa.
+fonte. Títulos ausentes ou repetidos ficam marcados para conferência manual no PDF. As transcrições
+separadas são propostas baseadas no índice e no texto extraído; não substituem a revisão de OCR e não
+confirmam sozinhas os limites semânticos de uma narrativa.
 
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 
@@ -51,7 +51,8 @@ Depois de gerar `assets/transcricoes.json.gz`, execute `python3 tools/restaurar_
 `assets/yoruba-tonos-revisao.json` com sugestões apoiadas pelos nomes yorùbá indexados no Verger.
 Como uma mesma palavra sem marcas pode ter leituras diferentes, sugestões não são aplicadas sem
 revisão. Inclua apenas substituições confirmadas em `tools/yoruba-tonos-aprovados.json` e execute
-`python3 tools/restaurar_tons.py --apply-approved` para aplicá-las.
+`python3 tools/restaurar_tons.py --apply-approved` para aplicá-las ao texto integral e aos trechos
+segmentados.
 
 ## 1. Colocar os PDFs
 

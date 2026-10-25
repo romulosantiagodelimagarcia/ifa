@@ -72,9 +72,14 @@
         if (entry.status !== 'matched') {
           const review = document.createElement('p');
           review.className = 'item-review';
-          review.textContent = entry.titleMatches
-            ? 'Título repetido na página; confira o trecho no PDF.'
-            : 'Título não localizado automaticamente; confira o trecho no PDF.';
+          const messages = {
+            'title-repeated': 'Título repetido na página; confira o trecho no PDF.',
+            'title-not-found': 'Título não localizado automaticamente; confira o trecho no PDF.',
+            'title-overlap': 'Títulos indexados se sobrepõem; confira o trecho no PDF.',
+            'next-title-not-found': 'O próximo título não foi localizado; limite deste trecho precisa de conferência no PDF.'
+          };
+          review.textContent = messages[entry.reviewReason] ||
+            'Trecho precisa de conferência manual no PDF.';
           article.append(review);
         }
         for (const page of entry.pages) {

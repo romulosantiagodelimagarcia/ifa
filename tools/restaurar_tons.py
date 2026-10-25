@@ -107,24 +107,38 @@ def apply_approved(data, approved, lexicon):
                 replacement not in lexicon[plain(original)]):
             raise SystemExit(f"Correção não confirmada pelo vocabulário de referência: "
                              f"{original} → {replacement}")
+
+    patterns = [
+        (re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I), replacement)
+        for original, replacement in approved.items()
+    ]
+
+    def restore_text(text):
+        changed = 0
+        for pattern, replacement in patterns:
+            def preserve_case(match):
+                found = match.group()
+                if found.isupper():
+                    return replacement.upper()
+                if found.islower():
+                    return replacement.lower()
+                if found[:1].isupper():
+                    return replacement[:1].upper() + replacement[1:]
+                return replacement
+
+            text, replacements = pattern.subn(preserve_case, text)
+            changed += replacements
+        return text, changed
+
     for source in ("N", "D"):
         for page_number, text in data["sources"][source]["textPages"].items():
-            for original, replacement in approved.items():
-                pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
-
-                def preserve_case(match):
-                    found = match.group()
-                    if found.isupper():
-                        return replacement.upper()
-                    if found.islower():
-                        return replacement.lower()
-                    if found[:1].isupper():
-                        return replacement[:1].upper() + replacement[1:]
-                    return replacement
-
-                text, changed = pattern.subn(preserve_case, text)
-                count += changed
+            text, changed = restore_text(text)
+            count += changed
             data["sources"][source]["textPages"][page_number] = text
+    for entries in data.get("entries", {}).values():
+        for entry in entries:
+            for page in entry["pages"]:
+                page["text"], _ = restore_text(page["text"])
     return count
 
 
