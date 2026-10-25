@@ -81,6 +81,35 @@ if(S.zi < 0 || !ZOOMS[S.zi]) S.zi = 3;
 const loaded = {};       // d -> Promise<{ok, pdf, kind, rec}>
 const hlCache = new Map();
 let routeTok = 0;
+let transcriptData;
+
+function loadTranscriptData(){
+  if(!transcriptData) transcriptData = fetch('assets/transcricoes.json.gz')
+    .then(response => {
+      if(!response.ok) throw new Error('HTTP ' + response.status);
+      if(!window.DecompressionStream) throw new Error('Este navegador não descompacta dados gzip.');
+      return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    }).catch(error => {
+      transcriptData = undefined;
+      throw error;
+    });
+  return transcriptData;
+}
+
+function updateTranscript(){
+  if($('transcript-panel').hidden || !S.d) return;
+  const d = S.d, n = S.cur;
+  $('transcript-heading').textContent = DOCS[d].nome + ' · página ' + n;
+  $('transcript-text').textContent = 'Carregando transcrição…';
+  loadTranscriptData().then(data => {
+    if($('transcript-panel').hidden || S.d !== d || S.cur !== n) return;
+    $('transcript-text').textContent = data.sources[d]?.textPages?.[n] ||
+      'Não há texto reconhecido nesta página.';
+  }).catch(error => {
+    if($('transcript-panel').hidden || S.d !== d || S.cur !== n) return;
+    $('transcript-text').textContent = 'Não foi possível carregar a transcrição: ' + error.message;
+  });
+}
 
 /* ---------- carregar documento ---------- */
 async function loadDoc(d){
@@ -319,6 +348,7 @@ function setCur(n){
   $('prev').disabled = n <= 1; $('next').disabled = n >= S.n;
   const tg = S.target && S.target.d === S.d ? S.target.p : 0;
   $('backtgt').hidden = !tg || Math.abs(n - tg) <= 1; $('tgtp').textContent = tg;
+  updateTranscript();
   $('native').href = (S.blobUrl || DOCS[S.d].f) + '#page=' + n;
   document.title = (S.target && S.target.t && n === tg ? S.target.t : DOCS[S.d].nome) + ' — p. ' + n;
   clearTimeout(hashT);
@@ -386,6 +416,13 @@ const setMenu = open => { menu.hidden = !open; menubtn.setAttribute('aria-expand
 menubtn.onclick = e => { e.stopPropagation(); setMenu(menu.hidden); };
 document.addEventListener('click', e => { if(!menu.hidden && !menu.contains(e.target) && e.target !== menubtn) setMenu(false); });
 $('files').onclick = () => { setMenu(false); showSetup(null); };
+function setTranscriptOpen(open){
+  $('transcript-panel').hidden = !open;
+  $('transcript-toggle').setAttribute('aria-expanded', open);
+  if(open) updateTranscript();
+}
+$('transcript-toggle').onclick = () => setTranscriptOpen($('transcript-panel').hidden);
+$('transcript-close').onclick = () => setTranscriptOpen(false);
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { setMenu(false); location.hash = '#d=' + b.dataset.go + '&p=1'; });
 
 /* ---------- tela de arquivos ---------- */

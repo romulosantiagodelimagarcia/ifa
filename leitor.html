@@ -29,6 +29,7 @@
     </div>
     <button class="btn ghost" id="backtgt" title="Voltar à página do link" hidden>↺ p. <span id="tgtp"></span></button>
     <div class="grp">
+      <button class="btn ghost" id="transcript-toggle" aria-expanded="false" aria-controls="transcript-panel">Texto</button>
       <button class="btn" id="zout" aria-label="Diminuir">−</button>
       <span class="zl" id="zl">100%</span>
       <button class="btn" id="zin" aria-label="Aumentar">+</button>
@@ -47,6 +48,14 @@
 </header>
 
 <main id="pages" class="pages"></main>
+
+<aside class="transcript-panel" id="transcript-panel" aria-label="Transcrição da página" hidden>
+  <header>
+    <h2 id="transcript-heading"></h2>
+    <button class="btn" id="transcript-close" aria-label="Fechar transcrição">×</button>
+  </header>
+  <pre id="transcript-text" aria-live="polite"></pre>
+</aside>
 
 <section class="setup" id="setup" hidden>
   <div class="eyebrow" id="setupeyebrow">Arquivos PDF</div>

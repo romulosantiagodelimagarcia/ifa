@@ -93,6 +93,7 @@ navegador**. A escolha fica salva no navegador.
 - Abre na página do link e destaca o título do patakí, a espécie ou o encantamento.
 - Rolagem contínua por todo o PDF, campo de página, zoom (− / +, teclas ← → + −).
 - Todos os links usam a mesma aba do leitor, em vez de abrir uma aba nova a cada clique.
+- No leitor, **Texto** abre a transcrição da página atual e acompanha a navegação entre páginas.
 - Os PDFs do repositório são carregados diretamente pelo leitor. Se estiver usando uma cópia local com
   PDFs diferentes ou sem os arquivos, também pode escolhê-los no aparelho; ficam guardados só naquele
   navegador (IndexedDB), sem envio ao site. Menu `⋯` → *Arquivos PDF…* para ver ou esquecer o que está
