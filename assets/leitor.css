@@ -64,12 +64,15 @@ code{font-family:var(--mono);font-size:.92em;color:var(--efun);background:rgba(2
   box-shadow:0 0 0 2px rgba(201,162,39,.85);animation:pulse 1.1s ease-in-out 3}
 @keyframes pulse{50%{background:rgba(201,162,39,.62)}}
 
-.transcript-panel{position:fixed;z-index:19;right:max(12px,calc((100vw - 900px)/2));bottom:12px;left:max(12px,calc((100vw - 900px)/2));
-  max-height:min(45vh,420px);overflow:auto;padding:14px 18px;background:var(--anil-850);border:1px solid var(--anil-700);
-  box-shadow:0 8px 28px rgba(0,0,0,.45)}
-.transcript-panel header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--anil-700);padding-bottom:8px}
-.transcript-panel h2{margin:0;font-family:var(--disp);font-size:18px;font-weight:600}
-.transcript-panel pre{margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.65 var(--sans);color:var(--efun)}
+.transcript-view{max-width:900px;margin:24px auto;padding:22px;background:var(--anil-850);border:1px solid var(--anil-700)}
+.transcript-controls{display:flex;align-items:end;flex-wrap:wrap;gap:12px 18px;padding-bottom:16px;border-bottom:1px solid var(--anil-700)}
+.transcript-controls label{display:flex;flex-direction:column;gap:4px;color:var(--efun-dim);font-size:12px}
+.transcript-controls select,.transcript-controls input{height:36px;padding:0 8px;background:var(--anil-900);border:1px solid var(--anil-700);border-radius:2px;color:var(--efun);font:13px var(--mono)}
+.transcript-page-controls{display:flex;align-items:end;gap:6px}
+.transcript-page-controls label{padding-bottom:9px}
+.transcript-page-controls input{width:5.2em;text-align:center}
+.transcript-view h1{font-family:var(--disp);font-size:clamp(22px,4vw,32px);line-height:1.2;margin:18px 0 12px}
+.transcript-view pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:15px/1.75 var(--sans);color:var(--efun)}
 
 /* configuração de arquivos */
 .setup{max-width:620px;margin:0 auto;padding:34px 18px 60px}
@@ -102,6 +105,6 @@ code{font-family:var(--mono);font-size:.92em;color:var(--efun);background:rgba(2
   .bar{padding:7px 10px}
   .pages{padding:12px 6px 60vh}
   .btn{height:36px}
-  .transcript-panel{right:8px;bottom:8px;left:8px;max-height:50vh;padding:12px}
+  .transcript-view{margin:12px;padding:14px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

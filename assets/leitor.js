@@ -74,7 +74,7 @@ const S = {
   d: null, pdf: null, kind: null, rec: null, blobUrl: null,
   n: 0, base: {w:595, h:842}, cssW: 0, cssH: 0, gen: 0,
   zi: Math.max(0, ZOOMS.indexOf(parseFloat(lsGet('ifa.zoom')) || 1)),
-  cur: 1, target: null, pending: 0, moved: false,
+  cur: 1, target: null, pending: 0, moved: false, pdfVisible: false,
   pages: [], visible: new Set(), rendered: new Map(), busy: false, io: null
 };
 if(S.zi < 0 || !ZOOMS[S.zi]) S.zi = 3;
@@ -97,16 +97,19 @@ function loadTranscriptData(){
 }
 
 function updateTranscript(){
-  if($('transcript-panel').hidden || !S.d) return;
-  const d = S.d, n = S.cur;
+  const d = S.target ? S.target.d : S.d, n = S.cur;
+  if(!d) return;
+  $('transcript-source').value = d;
+  $('transcript-page').max = DOCS[d].pags;
+  $('transcript-page').value = n;
   $('transcript-heading').textContent = DOCS[d].nome + ' · página ' + n;
   $('transcript-text').textContent = 'Carregando transcrição…';
   loadTranscriptData().then(data => {
-    if($('transcript-panel').hidden || S.d !== d || S.cur !== n) return;
+    if($('transcript-panel').hidden || (S.target ? S.target.d : S.d) !== d || S.cur !== n) return;
     $('transcript-text').textContent = data.sources[d]?.textPages?.[n] ||
       'Não há texto reconhecido nesta página.';
   }).catch(error => {
-    if($('transcript-panel').hidden || S.d !== d || S.cur !== n) return;
+    if($('transcript-panel').hidden || (S.target ? S.target.d : S.d) !== d || S.cur !== n) return;
     $('transcript-text').textContent = 'Não foi possível carregar a transcrição: ' + error.message;
   });
 }
@@ -150,14 +153,19 @@ function parseHash(){
   const h = location.hash.replace(/^#/, '');
   if(h === 'arquivos') return {setup:true};
   const q = new URLSearchParams(h), d = (q.get('d') || '').toUpperCase();
-  return {d: DOCS[d] ? d : null, p: Math.max(1, parseInt(q.get('p'), 10) || 1), t: (q.get('t') || '').trim()};
+  return {d: DOCS[d] ? d : 'N', p: Math.max(1, parseInt(q.get('p'), 10) || 1), t: (q.get('t') || '').trim()};
 }
 async function route(){
   const tok = ++routeTok, r = parseHash();
-  if(r.setup || !r.d){ showSetup(null); return; }
+  if(r.setup){ showSetup(null); return; }
   S.target = {d:r.d, p:r.p, t:r.t};
+  if(!S.pdfVisible || S.d !== r.d) S.cur = Math.min(r.p, DOCS[r.d].pags);
   setCtx();
+  updateTranscript();
+  if(!S.pdfVisible){ hideSetup(); return; }
   if(S.d !== r.d || !S.pdf){
+    $('pages').hidden = true;
+    $('ctrls').hidden = true;
     prog(0.03);
     const res = await getDoc(r.d);
     if(tok !== routeTok) return;
@@ -360,7 +368,7 @@ function setCur(n){
 }
 let raf = 0;
 window.addEventListener('scroll', () => {
-  if(raf || !S.pdf) return;
+  if(raf || !S.pdfVisible || !S.pdf || window.scrollY + innerHeight <= firstTop()) return;
   raf = requestAnimationFrame(() => {
     raf = 0;
     const y = window.scrollY + barH() + (innerHeight - barH()) * 0.25 - firstTop();
@@ -405,7 +413,7 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 document.addEventListener('keydown', e => {
-  if(!S.pdf || e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
+  if(!S.pdfVisible || !S.pdf || e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
   if(e.key === 'ArrowRight'){ e.preventDefault(); goTo(S.cur + 1); }
   else if(e.key === 'ArrowLeft'){ e.preventDefault(); goTo(S.cur - 1); }
   else if(e.key === '+' || e.key === '='){ zoom(1); }
@@ -417,12 +425,32 @@ menubtn.onclick = e => { e.stopPropagation(); setMenu(menu.hidden); };
 document.addEventListener('click', e => { if(!menu.hidden && !menu.contains(e.target) && e.target !== menubtn) setMenu(false); });
 $('files').onclick = () => { setMenu(false); showSetup(null); };
 function setTranscriptOpen(open){
-  $('transcript-panel').hidden = !open;
-  $('transcript-toggle').setAttribute('aria-expanded', open);
-  if(open) updateTranscript();
+  S.pdfVisible = open;
+  const requestedSource = parseHash().d;
+  const pdfReady = S.pdf && S.d === requestedSource;
+  $('pages').hidden = !open || !pdfReady;
+  $('ctrls').hidden = !open || !pdfReady;
+  $('pdf-toggle').textContent = open ? 'Ocultar PDF' : 'Abrir PDF desta página';
+  $('pdf-toggle').setAttribute('aria-expanded', open);
+  if(open) {
+    const routeState = parseHash();
+    if(routeState.setup) location.hash = '#d=' + $('transcript-source').value + '&p=' + S.cur;
+    else route();
+  }
+  else $('setup').hidden = true;
 }
-$('transcript-toggle').onclick = () => setTranscriptOpen($('transcript-panel').hidden);
-$('transcript-close').onclick = () => setTranscriptOpen(false);
+$('pdf-toggle').onclick = () => setTranscriptOpen(!S.pdfVisible);
+$('transcript-source').addEventListener('change', event => {
+  location.hash = '#d=' + event.target.value + '&p=1';
+});
+function changeTranscriptPage(page){
+  const source = $('transcript-source').value;
+  const number = Math.max(1, Math.min(DOCS[source].pags, Number.parseInt(page, 10) || 1));
+  location.hash = '#d=' + source + '&p=' + number;
+}
+$('transcript-page').addEventListener('change', event => changeTranscriptPage(event.target.value));
+$('transcript-previous').onclick = () => changeTranscriptPage(S.cur - 1);
+$('transcript-next').onclick = () => changeTranscriptPage(S.cur + 1);
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { setMenu(false); location.hash = '#d=' + b.dataset.go + '&p=1'; });
 
 /* ---------- tela de arquivos ---------- */
@@ -448,7 +476,11 @@ async function showSetup(d, err){
   window.scrollTo(0, 0);
   paintList();
 }
-function hideSetup(){ $('setup').hidden = true; $('pages').hidden = false; if(S.pdf) $('ctrls').hidden = false; }
+function hideSetup(){
+  $('setup').hidden = true;
+  $('pages').hidden = !S.pdfVisible || !S.pdf;
+  $('ctrls').hidden = !S.pdfVisible || !S.pdf;
+}
 $('closesetup').onclick = () => { hideSetup(); if(S.target && S.target.d === S.d) goTo(S.cur); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function webHas(d){
