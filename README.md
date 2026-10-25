@@ -118,7 +118,7 @@ Antes, saiba que:
 
 ```
 index.html                 índice (todas as abas do original)
-transcricao.html           transcrições por odu e Ewé
+transcricao.html           biblioteca de transcrições por título, tema e página
 leitor.html                leitor de PDF embutido
 assets/app.js              lógica do índice + geração dos links de página
 assets/data.js             dados do índice (gerado — não editar à mão)
@@ -131,7 +131,8 @@ assets/fonts.css, fonts/   IBM Plex Sans/Mono e Fraunces locais (SIL OFL)
 vendor/pdfjs/              PDF.js 3.11.174 (Apache-2.0)
 fonte/                     índice original (fonte dos dados)
 tools/extrair_dados.py     regenera assets/data.js a partir do índice original
-tools/transcrever.js       extrai texto dos PDFs por odu e por página do Ewé
+tools/transcrever.js       extrai texto e gera os mapas de trechos indexados
+tools/workers/             segmentação de patakís, subitens, orixás e Ewé
 tools/restaurar_tons.py    worker de sugestões e aplicação revisada de tons
 pdf/                       seus PDFs (fora do git)
 ```

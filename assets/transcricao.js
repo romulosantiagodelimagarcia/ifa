@@ -55,6 +55,12 @@
       return link;
     }
 
+    function excerptText(source, page) {
+      if (typeof page.text === 'string') return page.text;
+      const fullText = data.sources[source].textPages[page.page] || '';
+      return fullText.slice(page.start, page.end);
+    }
+
     function renderEntries(container, entries, source, emptyMessage) {
       container.replaceChildren();
       if (!entries.length) {
@@ -103,7 +109,7 @@
             block.append(pageLabel);
           }
           const text = document.createElement('pre');
-          text.textContent = page.text;
+          text.textContent = excerptText(source, page);
           block.append(text);
           article.append(block);
         }
@@ -197,7 +203,7 @@
             block.append(warning);
           }
           const text = document.createElement('pre');
-          text.textContent = entry.pages.map(page => page.text).join('\n\n');
+          text.textContent = entry.pages.map(page => excerptText('V', page)).join('\n\n');
           block.append(text);
           card.append(block);
         }
@@ -212,6 +218,11 @@
             meaning.textContent = charm.meaning;
             block.append(meaning);
           }
+          if (charm.anchorTitle) {
+            const anchor = document.createElement('p');
+            anchor.textContent = `Trecho localizado pelo nome da espécie: ${charm.anchorTitle}`;
+            block.append(anchor);
+          }
           block.append(pageLink('V', charm.start, charm.title));
           if (charm.status !== 'matched') {
             const warning = document.createElement('p');
@@ -221,7 +232,7 @@
           }
           for (const page of charm.pages) {
             const text = document.createElement('pre');
-            text.textContent = page.text;
+            text.textContent = excerptText('V', page);
             block.append(text);
           }
         }
@@ -305,7 +316,7 @@
             if (linked) {
               for (const page of linked.pages) {
                 const text = document.createElement('pre');
-                text.textContent = page.text;
+                text.textContent = excerptText(linked.source, page);
                 reference.append(text);
               }
             } else {

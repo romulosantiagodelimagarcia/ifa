@@ -72,6 +72,9 @@ function segmentEntries(entries, sources) {
     if (entry.status !== 'matched') {
       entry.reviewReason = match.matchCount ? 'title-repeated' : 'title-not-found';
     }
+    if (entry.matchTitle && entry.matchTitle !== entry.title) {
+      entry.anchorTitle = entry.matchTitle;
+    }
     entry.startOffset = match.matchCount ? match.start : 0;
     entry.titleEndOffset = match.matchCount ? match.end : 0;
     const key = entry.groupKey || `${entry.source}:${entry.cell}`;
@@ -122,8 +125,17 @@ function segmentEntries(entries, sources) {
           : next && next.start === pageNumber && next.start <= finalPage
             ? next.startOffset
             : text.length;
-        const excerpt = text.slice(start, Math.max(start, end)).trim();
-        if (excerpt) pages.push({ page: pageNumber, text: excerpt });
+        const excerpt = text.slice(start, Math.max(start, end));
+        const leading = excerpt.length - excerpt.trimStart().length;
+        const content = excerpt.trim();
+        if (content) {
+          const excerptStart = start + leading;
+          pages.push({
+            page: pageNumber,
+            start: excerptStart,
+            end: excerptStart + content.length
+          });
+        }
       }
       entry.pages = pages;
       delete entry.startOffset;
