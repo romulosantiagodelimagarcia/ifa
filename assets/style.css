@@ -257,6 +257,8 @@ footer code,.modohint code{font-family:var(--mono);font-size:.92em;color:var(--e
 
 .pdfbar{margin-top:22px;padding:14px 0 2px;border-top:1px solid var(--anil-700)}
 .pdfbar .srcfilter{flex-wrap:wrap}
+.transcript-cta{margin:12px 0 0;font-size:13px}
+.transcript-cta a{color:var(--efun);text-decoration:none;border-bottom:1px solid var(--anil-700);padding-bottom:2px}
 .modohint{margin:10px 0 0;max-width:64ch;font-size:12.5px;color:var(--efun-dim);line-height:1.55}
 .modohint b{color:var(--efun);font-weight:500}
 
