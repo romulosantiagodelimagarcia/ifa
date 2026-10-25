@@ -14,16 +14,16 @@ alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 
 `transcricao.html` reúne o texto extraído de todas as páginas de Naveira, Delgado e Verger. A aba
 “Patakís” e a aba “Obras e subitens” mostram cada título junto do trecho correspondente, agrupado por
-odu e separado por fonte. “Texto completo” permite trocar de obra, navegar por página e pesquisar no
-texto; “Ewé indexado” mostra as páginas relacionadas às espécies. Cada trecho tem link para o leitor
-PDF e os indicadores mostram a cobertura das páginas e dos títulos localizados. As fontes permanecem
-identificadas separadamente.
+odu e separado por fonte. “Orixás” reúne referências por entidade, incluindo as entradas “nasce neste
+odu”; “Ewé” reúne os trechos por espécie e encantamentos indexados. “Texto completo” permite trocar de
+obra, navegar por página e pesquisar no texto. Cada trecho tem link para o leitor PDF e os indicadores
+mostram a cobertura das páginas e dos títulos localizados. As fontes permanecem identificadas
+separadamente.
 
-Os workers `tools/workers/patakis.js` e `tools/workers/subitens.js` vinculam os títulos do índice aos
-textos das páginas indicadas e recortam cada trecho até o próximo título localizado no mesmo odu e
-fonte. Títulos ausentes ou repetidos ficam marcados para conferência manual no PDF. As transcrições
-separadas são propostas baseadas no índice e no texto extraído; não substituem a revisão de OCR e não
-confirmam sozinhas os limites semânticos de uma narrativa.
+Os workers em `tools/workers/` vinculam títulos do índice às páginas indicadas e recortam o trecho até
+o próximo título localizado. Títulos ausentes, repetidos ou sobrepostos ficam marcados para conferência
+manual no PDF. As transcrições separadas são propostas baseadas no índice e no texto extraído; não
+substituem a revisão de OCR e não confirmam sozinhas os limites semânticos de uma narrativa.
 
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 

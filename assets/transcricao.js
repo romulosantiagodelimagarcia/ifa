@@ -7,9 +7,15 @@
     const views = {
       'pataki-tab': 'pataki-view',
       'subitem-tab': 'subitem-view',
+      'orisha-tab': 'orisha-view',
       'ewe-tab': 'ewe-view',
       'full-tab': 'full-view'
     };
+    const entriesById = new Map(
+      [...data.entries.patakis, ...data.entries.subitems, ...data.entries.ewe.plants]
+        .map(entry => [entry.id, entry])
+    );
+    let eweLimit = 40;
 
     for (const odu of data.odus) {
       const option = document.createElement('option');
@@ -17,6 +23,12 @@
       option.textContent = `${odu.names.N} / ${odu.names.D}`;
       oduSelect.append(option);
       $('work-odu').append(option.cloneNode(true));
+    }
+    for (const entity of data.orishas.entities) {
+      const option = document.createElement('option');
+      option.value = entity.key;
+      option.textContent = entity.label;
+      $('orisha-select').append(option);
     }
 
     function normalize(value) {
@@ -139,31 +151,184 @@
     function renderEwe(query) {
       const list = $('ewe-list');
       const needle = normalize(query);
-      const matches = data.ewe.rows.filter(row =>
-        normalize([row.scientific, row.family, ...row.yoruba].join(' ')).includes(needle));
-      $('ewe-count').textContent = `${matches.length} espécies`;
+      const charmsByPlant = new Map();
+      for (const charm of data.entries.ewe.charms) {
+        if (!charmsByPlant.has(charm.scientific)) charmsByPlant.set(charm.scientific, []);
+        charmsByPlant.get(charm.scientific).push(charm);
+      }
+      const matches = data.ewe.rows.filter(row => {
+        const charms = charmsByPlant.get(row.scientific) || [];
+        return normalize([
+          row.scientific,
+          row.family,
+          ...row.yoruba,
+          ...row.purposes,
+          ...charms.flatMap(charm => [charm.title, charm.meaning])
+        ].join(' ')).includes(needle);
+      });
+      const visible = matches.slice(0, eweLimit);
+      $('ewe-count').textContent =
+        `${matches.length} espécies · mostrando ${visible.length}${matches.length > visible.length ? ' · use a busca ou carregue mais' : ''}`;
       list.replaceChildren();
-      for (const row of matches) {
+      $('ewe-more').hidden = matches.length <= visible.length;
+      for (const row of visible) {
         const card = document.createElement('article');
         card.className = 'ewe-card';
         const title = document.createElement('h3');
         title.textContent = row.scientific;
         card.append(title);
         const details = document.createElement('p');
-        details.textContent = `${row.family}${row.yoruba.length ? ` · ${row.yoruba.join(', ')}` : ''}`;
+        details.textContent = [
+          row.family,
+          row.yoruba.length ? row.yoruba.join(', ') : '',
+          row.purposes.length ? row.purposes.join(' · ') : ''
+        ].filter(Boolean).join(' · ');
         card.append(details);
-        for (const pageNumber of row.pages) {
-          const textContent = data.sources.V.textPages[pageNumber];
-          if (!textContent) continue;
+        const plantEntries = data.entries.ewe.plants.filter(entry =>
+          entry.scientific === row.scientific);
+        for (const entry of plantEntries) {
           const block = document.createElement('section');
           block.className = 'ewe-page';
-          block.append(pageLink('V', pageNumber, row.scientific));
+          block.append(pageLink('V', entry.start, row.scientific));
+          if (entry.status !== 'matched') {
+            const warning = document.createElement('p');
+            warning.className = 'item-review';
+            warning.textContent = 'Nome da espécie repetido nesta página; confira o recorte no PDF.';
+            block.append(warning);
+          }
           const text = document.createElement('pre');
-          text.textContent = textContent;
+          text.textContent = entry.pages.map(page => page.text).join('\n\n');
           block.append(text);
           card.append(block);
         }
+        for (const charm of charmsByPlant.get(row.scientific) || []) {
+          const block = document.createElement('section');
+          block.className = 'ewe-page';
+          const heading = document.createElement('h4');
+          heading.textContent = charm.title;
+          block.append(heading);
+          if (charm.meaning) {
+            const meaning = document.createElement('p');
+            meaning.textContent = charm.meaning;
+            block.append(meaning);
+          }
+          block.append(pageLink('V', charm.start, charm.title));
+          if (charm.status !== 'matched') {
+            const warning = document.createElement('p');
+            warning.className = 'item-review';
+            warning.textContent = 'Termo não localizado de forma única; confira o recorte no PDF.';
+            block.append(warning);
+          }
+          for (const page of charm.pages) {
+            const text = document.createElement('pre');
+            text.textContent = page.text;
+            block.append(text);
+          }
+        }
         list.append(card);
+      }
+    }
+
+    function renderOrisha(query) {
+      const list = $('orisha-list');
+      const needle = normalize(query.trim());
+      const selected = $('orisha-select').value;
+      const entities = data.orishas.entities.filter(entity =>
+        (!selected || entity.key === selected) &&
+        (!needle || normalize(entity.label).includes(needle) ||
+          entity.groups.some(group => {
+            const odu = oduByCell.get(group.cell);
+            return normalize(odu ? `${odu.names.N} ${odu.names.D}` : '').includes(needle) ||
+              group.items.some(item => normalize(item.title).includes(needle));
+          }) ||
+          entity.naceIds.some(id => {
+            const entry = entriesById.get(id) || data.orishas.nace.find(candidate => candidate.id === id);
+            return entry && normalize(entry.title).includes(needle);
+          })));
+      list.replaceChildren();
+      if (!selected) {
+        $('orisha-count').textContent = `${entities.length} entidades · escolha uma para abrir os títulos e ocorrências indexados`;
+        for (const entity of entities.slice(0, 80)) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'entity-choice';
+          button.textContent = `${entity.label} · ${entity.total.toLocaleString('pt-BR')} referências`;
+          button.addEventListener('click', () => {
+            $('orisha-select').value = entity.key;
+            renderOrisha($('orisha-search').value);
+          });
+          list.append(button);
+        }
+        return;
+      }
+      const entity = entities[0];
+      if (!entity) {
+        $('orisha-count').textContent = 'Nenhuma entidade ou título encontrado.';
+        return;
+      }
+      const naceEntries = entity.naceIds
+        .map(id => data.orishas.nace.find(entry => entry.id === id))
+        .filter(entry => {
+          const odu = entry && oduByCell.get(entry.cell);
+          return entry && (!needle ||
+            normalize(`${entry.title} ${odu?.names.N || ''} ${odu?.names.D || ''}`).includes(needle));
+        });
+      const groupEntries = entity.groups.map(group => {
+        const odu = oduByCell.get(group.cell);
+        const items = group.items.filter(item =>
+          !needle || normalize(`${item.title} ${odu?.names.N || ''} ${odu?.names.D || ''}`).includes(needle));
+        return { ...group, odu, items };
+      }).filter(group => group.items.length);
+      const referenceCount = groupEntries.reduce((count, group) => count + group.items.length, 0) +
+        naceEntries.length;
+      $('orisha-count').textContent =
+        `${entity.label} · ${referenceCount.toLocaleString('pt-BR')} referências${referenceCount < entity.total ? ' para o filtro atual' : ''}`;
+
+      for (const group of groupEntries) {
+        const section = document.createElement('section');
+        section.className = 'topic-group';
+        const heading = document.createElement('h3');
+        heading.textContent = group.odu
+          ? `${group.odu.names.N}${group.odu.names.D !== group.odu.names.N ? ` / ${group.odu.names.D}` : ''}`
+          : 'Odu';
+        section.append(heading);
+        for (const item of group.items) {
+          const reference = document.createElement('article');
+          reference.className = 'topic-reference';
+          const title = document.createElement('h4');
+          title.textContent = item.title;
+          reference.append(title);
+          const linkedEntries = item.entryIds.map(id => entriesById.get(id)).filter(Boolean);
+          for (let i = 0; i < item.pages.length; i++) {
+            reference.append(pageLink(item.source, item.pages[i], item.title));
+            const linked = linkedEntries.find(entry => entry.start === item.pages[i]);
+            if (linked) {
+              for (const page of linked.pages) {
+                const text = document.createElement('pre');
+                text.textContent = page.text;
+                reference.append(text);
+              }
+            } else {
+              const note = document.createElement('p');
+              note.textContent = 'Referência do índice; abra a página para conferir o trecho.';
+              reference.append(note);
+            }
+          }
+          section.append(reference);
+        }
+        list.append(section);
+      }
+
+      if (naceEntries.length) {
+        const section = document.createElement('section');
+        section.className = 'topic-group';
+        const heading = document.createElement('h3');
+        heading.textContent = '“Nasce neste odu”';
+        section.append(heading);
+        const entriesContainer = document.createElement('div');
+        renderEntries(entriesContainer, naceEntries, 'N', 'Nenhuma ocorrência encontrada.');
+        section.append(entriesContainer);
+        list.append(section);
       }
     }
 
@@ -233,13 +398,26 @@
         }
         if (viewId === 'ewe-view') renderEwe($('ewe-search').value);
         if (viewId === 'subitem-view') renderSubitems($('work-odu').value, $('subitem-search').value);
+        if (viewId === 'orisha-view') renderOrisha($('orisha-search').value);
       });
     }
 
     oduSelect.addEventListener('change', () => renderOdu(oduSelect.value));
     $('work-odu').addEventListener('change', () => renderSubitems($('work-odu').value, $('subitem-search').value));
     $('subitem-search').addEventListener('input', () => renderSubitems($('work-odu').value, $('subitem-search').value));
-    $('ewe-search').addEventListener('input', () => renderEwe($('ewe-search').value));
+    $('ewe-search').addEventListener('input', () => {
+      eweLimit = 40;
+      renderEwe($('ewe-search').value);
+    });
+    $('ewe-more').addEventListener('click', () => {
+      eweLimit += 40;
+      renderEwe($('ewe-search').value);
+    });
+    $('orisha-select').addEventListener('change', () => renderOrisha($('orisha-search').value));
+    $('orisha-search').addEventListener('input', () => {
+      $('orisha-select').value = '';
+      renderOrisha($('orisha-search').value);
+    });
     $('full-source').addEventListener('change', () => {
       $('search-results').replaceChildren();
       $('full-search').value = '';
@@ -271,7 +449,15 @@
       const label = kind === 'patakis' ? 'patakís' : 'subitens';
       return `${matched.toLocaleString('pt-BR')}/${entries.length.toLocaleString('pt-BR')} ${label} com título localizado`;
     });
-    $('transcript-coverage').textContent = [...pageCoverage, ...titleCoverage].join(' · ');
+    const eweEntries = [...data.entries.ewe.plants, ...data.entries.ewe.charms];
+    const orishaEntries = data.orishas.nace;
+    const thematicCoverage = [
+      `${data.entries.ewe.plants.filter(entry => entry.status === 'matched').length.toLocaleString('pt-BR')}/${data.entries.ewe.plants.length.toLocaleString('pt-BR')} referências Ewé localizadas`,
+      `${orishaEntries.filter(entry => entry.status === 'matched').length.toLocaleString('pt-BR')}/${orishaEntries.length.toLocaleString('pt-BR')} títulos “nasce neste odu” localizados`,
+      `${data.orishas.entities.length} entidades · ${data.orishas.entities.reduce((count, entity) => count + entity.groups.reduce((sum, group) => sum + group.items.filter(item => item.entryIds.some(Boolean)).length, 0), 0).toLocaleString('pt-BR')} ocorrências de orixás ligadas a trechos`,
+      `${eweEntries.filter(entry => entry.status !== 'matched').length.toLocaleString('pt-BR')} referências Ewé para revisão`
+    ];
+    $('transcript-coverage').textContent = [...pageCoverage, ...titleCoverage, ...thematicCoverage].join(' · ');
     for (const source of ['N', 'D']) {
       const sourceData = data.sources[source];
       $(`${source === 'N' ? 'n' : 'd'}-coverage`).textContent =

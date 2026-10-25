@@ -7,6 +7,8 @@ const zlib = require('node:zlib');
 const pdfjs = require('../vendor/pdfjs/pdf.min.js');
 const { buildPatakiEntries } = require('./workers/patakis');
 const { buildSubitemEntries } = require('./workers/subitens');
+const { buildEweEntries } = require('./workers/ewe');
+const { buildOrishaEntries } = require('./workers/orixas');
 
 const ROOT = path.resolve(__dirname, '..');
 const INPUT = path.join(ROOT, 'fonte', 'ifa-indice-completo-final.html');
@@ -215,7 +217,7 @@ async function main() {
         family: row[1],
         pages: row[2],
         yoruba: row[3],
-        purposes: row[4],
+        purposes: row[4].map(purpose => index.ewe.val[purpose]),
         details: row[5]
       }));
     }
@@ -231,10 +233,22 @@ async function main() {
     patakis: buildPatakiEntries(index, result.sources),
     subitems: buildSubitemEntries(index, result.sources)
   };
+  result.entries.ewe = buildEweEntries(index, result.sources);
+  result.orishas = buildOrishaEntries(
+    index,
+    result.sources,
+    [...result.entries.patakis, ...result.entries.subitems]
+  );
   for (const [label, entries] of Object.entries(result.entries)) {
-    const matched = entries.filter(entry => entry.status === 'matched').length;
-    console.log(`${label}: ${matched}/${entries.length} títulos localizados no texto`);
+    const lists = Array.isArray(entries) ? [entries] : Object.values(entries);
+    for (const list of lists) {
+      const matched = list.filter(entry => entry.status === 'matched').length;
+      console.log(`${label}: ${matched}/${list.length} títulos localizados no texto`);
+    }
   }
+  console.log(`Orixás: ${result.orishas.entities.length} entidades, ` +
+    `${result.orishas.entities.reduce((total, entity) => total + entity.groups.reduce(
+      (sum, group) => sum + group.items.length, 0), 0)} referências indexadas`);
 
   const output = zlib.gzipSync(JSON.stringify(result), { level: 9 });
   fs.writeFileSync(OUTPUT, output);

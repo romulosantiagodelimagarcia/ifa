@@ -17,10 +17,11 @@
   <p>Texto extraído página a página dos três PDFs. Consulte as obras completas, pesquise no texto ou navegue pelos trechos agrupados por odu. Cada obra permanece identificada como fonte independente.</p>
 </header>
 <main>
-  <nav class="tabs" aria-label="Tipo de transcrição">
+  <nav class="tabs" aria-label="Seções da biblioteca">
     <button type="button" id="pataki-tab" aria-pressed="true">Patakís</button>
     <button type="button" id="subitem-tab" aria-pressed="false">Obras e subitens</button>
-    <button type="button" id="ewe-tab" aria-pressed="false">Ewé indexado</button>
+    <button type="button" id="orisha-tab" aria-pressed="false">Orixás</button>
+    <button type="button" id="ewe-tab" aria-pressed="false">Ewé</button>
     <button type="button" id="full-tab" aria-pressed="false">Texto completo</button>
   </nav>
   <p id="transcript-coverage" class="coverage" aria-live="polite"></p>
@@ -57,10 +58,23 @@
     </div>
   </section>
   <section id="ewe-view" hidden>
-    <label for="ewe-search">Buscar espécie, família ou nome yorùbá</label>
+    <h2>Ewé · espécies e encantamentos</h2>
+    <p>Trechos localizados pelo nome científico ou pelo termo yorùbá; os itens com aviso precisam de conferência no PDF.</p>
+    <label for="ewe-search">Buscar espécie, família, nome yorùbá ou encantamento</label>
     <input id="ewe-search" type="search" autocomplete="off">
     <p id="ewe-count" aria-live="polite"></p>
     <div id="ewe-list"></div>
+    <button type="button" id="ewe-more" hidden>Mostrar mais espécies</button>
+  </section>
+  <section id="orisha-view" hidden>
+    <h2>Orixás · ocorrências e títulos associados</h2>
+    <p>Consulte ocorrências do índice por entidade; os trechos disponíveis vêm dos títulos segmentados e mantêm a fonte original.</p>
+    <label for="orisha-select">Orixá ou entidade</label>
+    <select id="orisha-select"><option value="">Todas as entidades</option></select>
+    <label for="orisha-search">Buscar entidade, título ou odu</label>
+    <input id="orisha-search" type="search" autocomplete="off">
+    <p id="orisha-count" aria-live="polite"></p>
+    <div id="orisha-list"></div>
   </section>
   <section id="full-view" hidden>
     <div class="full-controls">

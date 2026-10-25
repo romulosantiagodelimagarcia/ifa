@@ -66,7 +66,7 @@ function segmentEntries(entries, sources) {
   const groups = new Map();
 
   for (const entry of entries) {
-    const match = findTitle(entry.source, entry.start, entry.title);
+    const match = findTitle(entry.source, entry.start, entry.matchTitle || entry.title);
     entry.titleMatches = match.matchCount;
     entry.status = match.matchCount === 1 ? 'matched' : 'needs-review';
     if (entry.status !== 'matched') {
@@ -74,7 +74,7 @@ function segmentEntries(entries, sources) {
     }
     entry.startOffset = match.matchCount ? match.start : 0;
     entry.titleEndOffset = match.matchCount ? match.end : 0;
-    const key = `${entry.source}:${entry.cell}`;
+    const key = entry.groupKey || `${entry.source}:${entry.cell}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(entry);
   }
@@ -129,6 +129,8 @@ function segmentEntries(entries, sources) {
       delete entry.startOffset;
       delete entry.titleEndOffset;
       delete entry.catalogOrder;
+      delete entry.matchTitle;
+      delete entry.groupKey;
     }
   }
   return entries;
