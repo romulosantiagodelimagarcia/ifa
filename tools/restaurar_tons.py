@@ -20,6 +20,11 @@ APPROVED = pathlib.Path(__file__).with_name("yoruba-tonos-aprovados.json")
 OUTPUT = ROOT / "assets" / "yoruba-tonos-revisao.json"
 TOKEN = re.compile(r"[^\W\d_]+", re.UNICODE)
 DATA = re.compile(r"window\.IFA_TRANSCRIPT=(.*);\s*$", re.S)
+STOPWORDS = {
+    "a", "ao", "aos", "as", "com", "como", "da", "das", "de", "del", "do",
+    "dos", "el", "en", "es", "la", "las", "los", "na", "no", "nos", "o",
+    "os", "para", "por", "que", "se", "the", "três", "tres", "um", "uma"
+}
 
 
 def plain(word):
@@ -56,36 +61,70 @@ def collect_proposals(data, lexicon):
             for page in section["pages"]:
                 for match in TOKEN.finditer(page["text"]):
                     original = match.group()
+                    if len(original) < 3 or plain(original) in STOPWORDS:
+                        continue
                     options = lexicon.get(plain(original), [])
                     if not options or original in options:
                         continue
-                    key = (source, page["page"], match.start())
-                    proposals[key] = {
+                    key = (source, plain(original), tuple(options))
+                    proposal = proposals.setdefault(key, {
                         "source": source,
-                        "odu": odu["cell"],
-                        "page": page["page"],
-                        "offset": match.start(),
-                        "original": original,
+                        "normalized": plain(original),
                         "suggestions": options,
-                        "context": page["text"][max(0, match.start() - 50):
-                                                  min(len(page["text"]), match.end() + 50)]
-                    }
-    return sorted(proposals.values(), key=lambda item: (
-        item["source"], item["page"], item["offset"]
+                        "occurrences": 0,
+                        "sourceForms": set(),
+                        "pages": set(),
+                        "odus": set(),
+                        "contexts": []
+                    })
+                    proposal["occurrences"] += 1
+                    proposal["sourceForms"].add(original)
+                    proposal["pages"].add(page["page"])
+                    proposal["odus"].add(odu["cell"])
+                    if len(proposal["contexts"]) < 3:
+                        proposal["contexts"].append({
+                            "page": page["page"],
+                            "odu": odu["cell"],
+                            "text": page["text"][max(0, match.start() - 50):
+                                                 min(len(page["text"]), match.end() + 50)]
+                        })
+    result = []
+    for proposal in proposals.values():
+        proposal["sourceForms"] = sorted(proposal["sourceForms"])
+        proposal["pages"] = sorted(proposal["pages"])
+        proposal["odus"] = sorted(proposal["odus"])
+        result.append(proposal)
+    return sorted(result, key=lambda item: (
+        item["source"], item["normalized"], item["suggestions"]
     ))
 
 
-def apply_approved(data, approved):
+def apply_approved(data, approved, lexicon):
     count = 0
+    for original, replacement in approved.items():
+        if (plain(original) not in lexicon or
+                replacement not in lexicon[plain(original)]):
+            raise SystemExit(f"Correção não confirmada pelo vocabulário de referência: "
+                             f"{original} → {replacement}")
     for odu in data["odus"]:
         for source in ("N", "D"):
             for page in odu["sources"][source]["pages"]:
                 text = page["text"]
                 for original, replacement in approved.items():
-                    if plain(original) == plain(replacement) and original != replacement:
-                        pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
-                        text, changed = pattern.subn(lambda _: replacement, text)
-                        count += changed
+                    pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
+
+                    def preserve_case(match):
+                        found = match.group()
+                        if found.isupper():
+                            return replacement.upper()
+                        if found.islower():
+                            return replacement.lower()
+                        if found[:1].isupper():
+                            return replacement[:1].upper() + replacement[1:]
+                        return replacement
+
+                    text, changed = pattern.subn(preserve_case, text)
+                    count += changed
                 page["text"] = text
     return count
 
@@ -96,7 +135,8 @@ def main():
                         help="aplica somente o dicionário revisado e aprovado")
     args = parser.parse_args()
     data = read_data()
-    proposals = collect_proposals(data, build_lexicon(data))
+    lexicon = build_lexicon(data)
+    proposals = collect_proposals(data, lexicon)
     OUTPUT.write_text(json.dumps({
         "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "reference": "Nomes yorùbá indexados em assets/transcricoes.js (Ewé/Verger)",
@@ -107,7 +147,7 @@ def main():
 
     if args.apply_approved:
         approved = json.loads(APPROVED.read_text(encoding="utf-8"))
-        changed = apply_approved(data, approved)
+        changed = apply_approved(data, approved, lexicon)
         TRANSCRIPT.write_text(
             "/* Gerado por tools/transcrever.js; tons aprovados aplicados por "
             "tools/restaurar_tons.py. */\nwindow.IFA_TRANSCRIPT=" +

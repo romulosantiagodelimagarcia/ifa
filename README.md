@@ -14,7 +14,10 @@ alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 
 `transcricao.html` apresenta por odu o texto extraído em listas independentes de Naveira e Delgado,
 sem presumir que histórias em páginas semelhantes sejam correspondentes. A aba Ewé mostra as páginas
-do Verger indexadas por espécie. Cada página transcrita tem um link para o leitor PDF.
+do Verger indexadas por espécie. Cada página transcrita tem um link para o leitor PDF. A separação
+automática estabelece limites de odu e preserva a paginação; ela não determina com segurança o
+começo e o fim de cada narrativa individual, que ainda exigem conferência antes de uma publicação
+como transcrições separadas por patakí.
 
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 

@@ -14,7 +14,7 @@
 <header class="top">
   <a href="index.html">‹ Índice</a>
   <h1>Transcrições por odu</h1>
-  <p>Listas independentes: cada coluna reproduz somente a fonte indicada. Os relatos não são pareados entre os tratados.</p>
+  <p>Listas independentes: cada coluna reproduz somente a fonte indicada. Os relatos não são pareados entre os tratados. A separação automática é por odu e página; revise os limites entre narrativas antes de tratá-las como transcrições individuais.</p>
 </header>
 <main>
   <nav class="tabs" aria-label="Tipo de transcrição">
@@ -24,15 +24,11 @@
   <section id="pataki-view">
     <label for="odu">Odu</label>
     <select id="odu"></select>
-    <div class="columns">
-      <section class="source" aria-labelledby="n-title">
-        <h2 id="n-title">Naveira</h2>
-        <div id="n-content"></div>
-      </section>
-      <section class="source" aria-labelledby="d-title">
-        <h2 id="d-title">Delgado</h2>
-        <div id="d-content"></div>
-      </section>
+    <div class="table-wrap">
+      <table class="transcription-table">
+        <thead><tr><th scope="col">Naveira · lista independente</th><th scope="col">Delgado · lista independente</th></tr></thead>
+        <tbody><tr><td id="n-content"></td><td id="d-content"></td></tr></tbody>
+      </table>
     </div>
   </section>
   <section id="ewe-view" hidden>
