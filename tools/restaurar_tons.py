@@ -58,8 +58,9 @@ def collect_proposals(data, lexicon):
     for odu in data["odus"]:
         for source in ("N", "D"):
             section = odu["sources"][source]
-            for page in section["pages"]:
-                for match in TOKEN.finditer(page["text"]):
+            for page_number in section["pages"]:
+                text = data["sources"][source]["textPages"][str(page_number)]
+                for match in TOKEN.finditer(text):
                     original = match.group()
                     if len(original) < 3 or plain(original) in STOPWORDS:
                         continue
@@ -79,14 +80,14 @@ def collect_proposals(data, lexicon):
                     })
                     proposal["occurrences"] += 1
                     proposal["sourceForms"].add(original)
-                    proposal["pages"].add(page["page"])
+                    proposal["pages"].add(page_number)
                     proposal["odus"].add(odu["cell"])
                     if len(proposal["contexts"]) < 3:
                         proposal["contexts"].append({
-                            "page": page["page"],
+                            "page": page_number,
                             "odu": odu["cell"],
-                            "text": page["text"][max(0, match.start() - 50):
-                                                 min(len(page["text"]), match.end() + 50)]
+                            "text": text[max(0, match.start() - 50):
+                                         min(len(text), match.end() + 50)]
                         })
     result = []
     for proposal in proposals.values():
@@ -106,26 +107,24 @@ def apply_approved(data, approved, lexicon):
                 replacement not in lexicon[plain(original)]):
             raise SystemExit(f"Correção não confirmada pelo vocabulário de referência: "
                              f"{original} → {replacement}")
-    for odu in data["odus"]:
-        for source in ("N", "D"):
-            for page in odu["sources"][source]["pages"]:
-                text = page["text"]
-                for original, replacement in approved.items():
-                    pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
+    for source in ("N", "D"):
+        for page_number, text in data["sources"][source]["textPages"].items():
+            for original, replacement in approved.items():
+                pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
 
-                    def preserve_case(match):
-                        found = match.group()
-                        if found.isupper():
-                            return replacement.upper()
-                        if found.islower():
-                            return replacement.lower()
-                        if found[:1].isupper():
-                            return replacement[:1].upper() + replacement[1:]
-                        return replacement
+                def preserve_case(match):
+                    found = match.group()
+                    if found.isupper():
+                        return replacement.upper()
+                    if found.islower():
+                        return replacement.lower()
+                    if found[:1].isupper():
+                        return replacement[:1].upper() + replacement[1:]
+                    return replacement
 
-                    text, changed = pattern.subn(preserve_case, text)
-                    count += changed
-                page["text"] = text
+                text, changed = pattern.subn(preserve_case, text)
+                count += changed
+            data["sources"][source]["textPages"][page_number] = text
     return count
 
 

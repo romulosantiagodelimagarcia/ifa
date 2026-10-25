@@ -139,15 +139,8 @@ async function main() {
     }
   }
 
-  const ewePages = new Set([561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571,
-    572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586,
-    587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601,
-    602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616,
-    617, 618]);
-  for (const row of index.ewe.rows) for (const page of row[2]) ewePages.add(page);
-
   const result = {
-    version: 1,
+    version: 2,
     sources: {},
     odus: index.odus.map(odu => ({
       cell: odu.c,
@@ -156,34 +149,31 @@ async function main() {
     })),
     ewe: {
       rows: index.ewe.rows,
-      pages: {}
     }
   };
   const byCell = new Map(result.odus.map(odu => [odu.cell, odu]));
 
   for (const [code, metadata] of Object.entries(DOCS)) {
     const doc = await loadPdf(code, metadata);
-    result.sources[code] = { title: metadata.title, pages: doc.numPages, file: metadata.file };
+    result.sources[code] = {
+      title: metadata.title,
+      pages: doc.numPages,
+      file: metadata.file,
+      textPages: {}
+    };
     const checkpoint = loadPageCheckpoint(code);
     const sourceSession = session.sources[code] ??= { status: 'pending', pagesDone: 0 };
     sourceSession.status = 'running';
-    sourceSession.totalPages = code === 'V' ? ewePages.size :
-      oduPages[code].reduce((total, section) => total + section.end - section.page + 1, 0);
+    sourceSession.totalPages = doc.numPages;
     sourceSession.pagesDone = checkpoint.pages.size;
     saveSession(session);
-    const wantedPages = new Set();
-    if (code === 'V') {
-      if (doc.numPages !== 618) throw new Error(`Verger: esperado 618 páginas; recebido ${doc.numPages}`);
-      for (const page of ewePages) {
-        if (!Number.isInteger(page) || page < 1 || page > doc.numPages) {
-          throw new Error(`Verger: referência de página inválida: ${page}`);
-        }
-        wantedPages.add(page);
-      }
-    } else {
-      for (const section of oduPages[code]) {
-        for (let page = section.page; page <= section.end; page++) wantedPages.add(page);
-      }
+    if (code === 'V' && doc.numPages !== 618) {
+      throw new Error(`Verger: esperado 618 páginas; recebido ${doc.numPages}`);
+    }
+    const wantedPages = new Set(
+      Array.from({ length: doc.numPages }, (_, index) => index + 1)
+    );
+    if (code !== 'V') {
       for (const section of oduPages[code]) {
         const text = await getPageText(doc, section.page);
         if (!normalize(text).includes(normalize(section.title))) {
@@ -211,13 +201,13 @@ async function main() {
         saveSession(session);
       }
       pageTexts[page] = text;
+      result.sources[code].textPages[page] = text;
       if (code !== 'V') {
         const section = oduPages[code].find(item => page >= item.page && page <= item.end);
-        byCell.get(section.cell).sources[code].pages.push({ page, text: pageTexts[page] });
+        if (section) byCell.get(section.cell).sources[code].pages.push(page);
       }
     }
     if (code === 'V') {
-      result.ewe.pages = pageTexts;
       result.ewe.rows = index.ewe.rows.map(row => ({
         scientific: row[0],
         family: row[1],
