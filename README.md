@@ -89,16 +89,21 @@ navegador**. A escolha fica salva no navegador.
 
 ## 3. GitHub Pages (quando quiser publicar)
 
-Nada está publicado: o repositório é privado e o Pages está desligado. Para publicar depois:
+Nada está publicado. É possível publicar a partir deste repositório privado com um plano que ofereça
+GitHub Pages para repositórios privados. Para ativar:
 *Settings → Pages → Build and deployment → Deploy from a branch → `main` / `(root)`*.
 
 Antes, saiba que:
 
-- No plano gratuito o GitHub Pages só funciona com repositório **público**; em repositório privado
-  exige GitHub Pro/Team. E o site publicado é público de qualquer forma (a tag `noindex` só pede aos
-  buscadores para não indexar).
-- Os PDFs **não** vão junto (estão no `.gitignore`). Quem abrir o site publicado escolhe os próprios
-  PDFs no aparelho, e o leitor funciona igual.
+- No GitHub Free, o repositório precisa ser **público**; planos elegíveis permitem manter o repositório
+  privado. Isso protege o código-fonte, mas não o site: o Pages é público por padrão. Restringir o
+  acesso ao site exige Enterprise Cloud e um repositório de organização. A tag `noindex` só pede aos
+  buscadores para não indexar. Consulte [os limites de plano](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
+  e [o controle de acesso](https://docs.github.com/en/enterprise-cloud@latest/pages/getting-started-with-github-pages/changing-the-visibility-of-your-github-pages-site).
+- Antes de ativar, confira tudo que está versionado: o Pages publica os arquivos da raiz, inclusive
+  PDFs que estejam nela. A pasta `pdf/` é ignorada pelo Git, mas isso não se aplica aos PDFs já
+  versionados na raiz. Quem abrir o site pode escolher os próprios PDFs no aparelho, e o leitor
+  funciona igual.
 - A aba **“Meu itá”** traz o seu registro pessoal (odus e datas), que ficaria visível para quem tiver
   o link.
 - O arquivo `.nojekyll` já está na raiz, para o Pages servir os arquivos como estão.
