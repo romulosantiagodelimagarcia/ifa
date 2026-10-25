@@ -46,7 +46,28 @@
   <div class="prog" id="prog" hidden><i id="progbar"></i></div>
 </header>
 
-<main id="pages" class="pages"></main>
+<main class="transcript-view" id="transcript-panel" aria-label="Transcrição da página">
+  <div class="transcript-controls">
+    <label>Obra
+      <select id="transcript-source" aria-label="Obra da transcrição">
+        <option value="N">Naveira</option>
+        <option value="D">Delgado</option>
+        <option value="V">Verger</option>
+      </select>
+    </label>
+    <div class="transcript-page-controls">
+      <button class="btn" id="transcript-previous" aria-label="Página anterior">‹</button>
+      <label for="transcript-page">Página</label>
+      <input id="transcript-page" type="number" min="1" value="1" aria-label="Página da transcrição">
+      <button class="btn" id="transcript-next" aria-label="Próxima página">›</button>
+    </div>
+    <button class="btn ghost" id="pdf-toggle" aria-expanded="false" aria-controls="pages">Abrir PDF desta página</button>
+  </div>
+  <h1 id="transcript-heading"></h1>
+  <pre id="transcript-text" aria-live="polite"></pre>
+</main>
+
+<main id="pages" class="pages" hidden></main>
 
 <section class="setup" id="setup" hidden>
   <div class="eyebrow" id="setupeyebrow">Arquivos PDF</div>
