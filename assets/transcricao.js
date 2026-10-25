@@ -22,9 +22,21 @@
     }
 
     function pageLink(source, page, title) {
+      const sourceData = data.sources[source];
+      const pageNumber = Number(page);
+      if (!sourceData || !Number.isSafeInteger(pageNumber) ||
+          pageNumber < 1 || pageNumber > sourceData.pages) {
+        throw new Error('Fonte ou página inválida para abrir no leitor.');
+      }
       const link = document.createElement('a');
-      link.href = `leitor.html#d=${source}&p=${page}&t=${encodeURIComponent(title)}`;
-      link.textContent = `${data.sources[source].title} · abrir p. ${page} no leitor`;
+      const target = new URL('leitor.html', document.baseURI);
+      target.hash = new URLSearchParams({
+        d: source,
+        p: String(pageNumber),
+        t: title
+      }).toString();
+      link.href = target.href;
+      link.textContent = `${sourceData.title} · abrir p. ${pageNumber} no leitor`;
       link.target = 'ifa-leitor';
       return link;
     }
