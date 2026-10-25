@@ -91,10 +91,11 @@ navegador**. A escolha fica salva no navegador.
 - Abre na página do link e destaca o título do patakí, a espécie ou o encantamento.
 - Rolagem contínua por todo o PDF, campo de página, zoom (− / +, teclas ← → + −).
 - Todos os links usam a mesma aba do leitor, em vez de abrir uma aba nova a cada clique.
-- Se o PDF não estiver na pasta `pdf/` (por exemplo no celular, ou num GitHub Pages sem os PDFs), o
-  leitor pede o arquivo **uma vez**: pode escolher os três de uma vez, ele reconhece cada um pelo
-  número de páginas. Os arquivos ficam guardados **só naquele navegador** (IndexedDB) e não são
-  enviados a lugar nenhum. Menu `⋯` → *Arquivos PDF…* para ver ou esquecer o que está guardado.
+- No GitHub Pages, a pasta `pdf/` do seu computador não está disponível para o site. Escolha os PDFs
+  no leitor (pode selecionar os três de uma vez; ele reconhece cada um pelo número de páginas). Eles
+  ficam guardados **só naquele navegador** (IndexedDB), não são enviados ao site e, normalmente, não
+  precisam ser escolhidos novamente nesse navegador. Numa cópia local do projeto, também é possível
+  colocar os arquivos na pasta `pdf/`. Menu `⋯` → *Arquivos PDF…* para ver ou esquecer o que está guardado.
 - Usa [PDF.js](https://mozilla.github.io/pdf.js/) 3.11 incluído em `vendor/pdfjs/` (funciona sem
   internet e também via `file://`).
 
