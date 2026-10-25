@@ -25,7 +25,7 @@ o próximo título localizado. Títulos ausentes, repetidos ou sobrepostos ficam
 manual no PDF. As transcrições separadas são propostas baseadas no índice e no texto extraído; não
 substituem a revisão de OCR e não confirmam sozinhas os limites semânticos de uma narrativa.
 
-Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
+Para regenerar a transcrição a partir dos PDFs em `pdf/`:
 
 ```
 node tools/transcrever.js
@@ -56,7 +56,7 @@ segmentados.
 
 ## 1. Colocar os PDFs
 
-Copie os três PDFs para a pasta `pdf/` com estes nomes:
+Os três PDFs usados pelo índice estão incluídos nesta pasta com estes nomes:
 
 | Arquivo            | Obra                | Páginas |
 |--------------------|---------------------|---------|
@@ -64,7 +64,9 @@ Copie os três PDFs para a pasta `pdf/` com estes nomes:
 | `pdf/delgado.pdf`  | Delgado             | 3.089   |
 | `pdf/verger.pdf`   | Verger              | 618     |
 
-A pasta `pdf/` está no `.gitignore`: **os PDFs nunca sobem para o GitHub**. As páginas do índice são a
+Os PDFs são publicados junto com o site para que os links do índice abram a obra e a página corretas.
+As transcrições extraídas também estão incluídas em `assets/transcricoes.json.gz`, organizadas por obra
+e página; `transcricao.html` mostra os trechos e os liga ao leitor PDF. As páginas do índice são a
 numeração do arquivo PDF (página 1 = primeira folha do arquivo), não a impressa no livro.
 
 ## 2. Usar offline
@@ -91,26 +93,22 @@ navegador**. A escolha fica salva no navegador.
 - Abre na página do link e destaca o título do patakí, a espécie ou o encantamento.
 - Rolagem contínua por todo o PDF, campo de página, zoom (− / +, teclas ← → + −).
 - Todos os links usam a mesma aba do leitor, em vez de abrir uma aba nova a cada clique.
-- No GitHub Pages, a pasta `pdf/` do seu computador não está disponível para o site. Escolha os PDFs
-  no leitor (pode selecionar os três de uma vez; ele reconhece cada um pelo número de páginas). Eles
-  ficam guardados **só naquele navegador** (IndexedDB), não são enviados ao site e, normalmente, não
-  precisam ser escolhidos novamente nesse navegador. Numa cópia local do projeto, também é possível
-  colocar os arquivos na pasta `pdf/`. Menu `⋯` → *Arquivos PDF…* para ver ou esquecer o que está guardado.
+- Os PDFs do repositório são carregados diretamente pelo leitor. Se estiver usando uma cópia local com
+  PDFs diferentes ou sem os arquivos, também pode escolhê-los no aparelho; ficam guardados só naquele
+  navegador (IndexedDB), sem envio ao site. Menu `⋯` → *Arquivos PDF…* para ver ou esquecer o que está
+  guardado.
 - Usa [PDF.js](https://mozilla.github.io/pdf.js/) 3.11 incluído em `vendor/pdfjs/` (funciona sem
   internet e também via `file://`).
 
-## 3. GitHub Pages (quando quiser publicar)
+## 3. GitHub Pages
 
-Nada está publicado: o repositório é privado e o Pages está desligado. Para publicar depois:
-*Settings → Pages → Build and deployment → Deploy from a branch → `main` / `(root)`*.
-
-Antes, saiba que:
+Para publicar, configure *Settings → Pages → Build and deployment → Deploy from a branch → `main` /
+`(root)`*. O site, as transcrições integrais e os três PDFs serão públicos, assim como o restante dos
+arquivos publicados pelo Pages.
 
 - No plano gratuito o GitHub Pages só funciona com repositório **público**; em repositório privado
   exige GitHub Pro/Team. E o site publicado é público de qualquer forma (a tag `noindex` só pede aos
   buscadores para não indexar).
-- Os PDFs **não** vão junto (estão no `.gitignore`). Quem abrir o site publicado escolhe os próprios
-  PDFs no aparelho, e o leitor funciona igual.
 - A aba **“Meu itá”** traz o seu registro pessoal (odus e datas), que ficaria visível para quem tiver
   o link.
 - O arquivo `.nojekyll` já está na raiz, para o Pages servir os arquivos como estão.

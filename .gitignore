@@ -1,6 +1,3 @@
-# Os PDFs dos tratados ficam só na sua máquina — não vão para o repositório.
-pdf/*.pdf
-pdf/*.PDF
 tools/.transcricao-state/
 .DS_Store
 Thumbs.db
