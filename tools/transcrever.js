@@ -5,6 +5,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const zlib = require('node:zlib');
 const pdfjs = require('../vendor/pdfjs/pdf.min.js');
+const { buildPatakiEntries } = require('./workers/patakis');
+const { buildSubitemEntries } = require('./workers/subitens');
 
 const ROOT = path.resolve(__dirname, '..');
 const INPUT = path.join(ROOT, 'fonte', 'ifa-indice-completo-final.html');
@@ -223,6 +225,15 @@ async function main() {
     sourceSession.completedAt = new Date().toISOString();
     saveSession(session);
     console.log(`${metadata.title}: ${wantedPages.size} páginas extraídas`);
+  }
+
+  result.entries = {
+    patakis: buildPatakiEntries(index, result.sources),
+    subitems: buildSubitemEntries(index, result.sources)
+  };
+  for (const [label, entries] of Object.entries(result.entries)) {
+    const matched = entries.filter(entry => entry.status === 'matched').length;
+    console.log(`${label}: ${matched}/${entries.length} títulos localizados no texto`);
   }
 
   const output = zlib.gzipSync(JSON.stringify(result), { level: 9 });
