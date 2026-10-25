@@ -18,19 +18,19 @@ const SESSION_FILE = path.join(STATE_DIR, 'session.json');
 const LOCK_DIR = path.join(STATE_DIR, 'lock');
 const DOCS = {
   N: {
-    file: 'pdfcoffee.com_coleccion-de-ifa-de-roberto-naveira-pdf-free 2.pdf',
+    file: 'pdf/naveira.pdf',
     title: 'Naveira',
     pageKey: 'navp',
     nameKey: 'nav'
   },
   D: {
-    file: 'tratado de ifa los 256 oddun 2.pdf',
+    file: 'pdf/delgado.pdf',
     title: 'Delgado',
     pageKey: 'delp',
     nameKey: 'del'
   },
   V: {
-    file: 'pdfcoffee.com_ewe-pierre-vergerpdf-pdf-free.pdf',
+    file: 'pdf/verger.pdf',
     title: 'Verger',
     pageKey: null,
     nameKey: null
