@@ -14,6 +14,7 @@ import json
 import pathlib
 import re
 import unicodedata
+from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TRANSCRIPT = ROOT / "assets" / "transcricoes.json.gz"
@@ -58,8 +59,9 @@ def collect_proposals(data, lexicon):
     for odu in data["odus"]:
         for source in ("N", "D"):
             section = odu["sources"][source]
-            for page in section["pages"]:
-                for match in TOKEN.finditer(page["text"]):
+            for page_number in section["pages"]:
+                text = data["sources"][source]["textPages"][str(page_number)]
+                for match in TOKEN.finditer(text):
                     original = match.group()
                     if len(original) < 3 or plain(original) in STOPWORDS:
                         continue
@@ -79,14 +81,14 @@ def collect_proposals(data, lexicon):
                     })
                     proposal["occurrences"] += 1
                     proposal["sourceForms"].add(original)
-                    proposal["pages"].add(page["page"])
+                    proposal["pages"].add(page_number)
                     proposal["odus"].add(odu["cell"])
                     if len(proposal["contexts"]) < 3:
                         proposal["contexts"].append({
-                            "page": page["page"],
+                            "page": page_number,
                             "odu": odu["cell"],
-                            "text": page["text"][max(0, match.start() - 50):
-                                                 min(len(page["text"]), match.end() + 50)]
+                            "text": text[max(0, match.start() - 50):
+                                         min(len(text), match.end() + 50)]
                         })
     result = []
     for proposal in proposals.values():
@@ -106,26 +108,76 @@ def apply_approved(data, approved, lexicon):
                 replacement not in lexicon[plain(original)]):
             raise SystemExit(f"Correção não confirmada pelo vocabulário de referência: "
                              f"{original} → {replacement}")
-    for odu in data["odus"]:
-        for source in ("N", "D"):
-            for page in odu["sources"][source]["pages"]:
-                text = page["text"]
-                for original, replacement in approved.items():
-                    pattern = re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I)
 
-                    def preserve_case(match):
-                        found = match.group()
-                        if found.isupper():
-                            return replacement.upper()
-                        if found.islower():
-                            return replacement.lower()
-                        if found[:1].isupper():
-                            return replacement[:1].upper() + replacement[1:]
-                        return replacement
+    patterns = [
+        (re.compile(rf"(?<!\w){re.escape(original)}(?!\w)", re.I), replacement)
+        for original, replacement in approved.items()
+    ]
 
-                    text, changed = pattern.subn(preserve_case, text)
-                    count += changed
-                page["text"] = text
+    def restore_text(text, ranges=()):
+        changed = 0
+        for pattern, replacement in patterns:
+            def preserve_case(match):
+                found = match.group()
+                if found.isupper():
+                    return replacement.upper()
+                if found.islower():
+                    return replacement.lower()
+                if found[:1].isupper():
+                    return replacement[:1].upper() + replacement[1:]
+                return replacement
+
+            global_pattern = re.compile(pattern.pattern, pattern.flags | re.MULTILINE)
+            matches = []
+            pieces = []
+            cursor = 0
+            for match in global_pattern.finditer(text):
+                actual = preserve_case(match)
+                matches.append((match.start(), match.end(), len(actual)))
+                pieces.extend((text[cursor:match.start()], actual))
+                cursor = match.end()
+            if not matches:
+                continue
+            pieces.append(text[cursor:])
+            text = "".join(pieces)
+            changed += len(matches)
+
+            def adjusted(offset):
+                delta = 0
+                for start, end, replacement_length in matches:
+                    if offset < start:
+                        break
+                    if offset >= end:
+                        delta += replacement_length - (end - start)
+                    else:
+                        return start + delta + min(offset - start, replacement_length)
+                return offset + delta
+
+            for page in ranges:
+                page["start"] = adjusted(page["start"])
+                page["end"] = adjusted(page["end"])
+        return text, changed
+
+    all_entries = []
+    for entries in data.get("entries", {}).values():
+        if isinstance(entries, list):
+            all_entries.extend(entries)
+        else:
+            for values in entries.values():
+                all_entries.extend(values)
+    all_entries.extend(data.get("orishas", {}).get("nace", []))
+    ranges_by_page = defaultdict(list)
+    for entry in all_entries:
+        for page in entry.get("pages", []):
+            if "start" in page and "end" in page:
+                ranges_by_page[(entry["source"], str(page["page"]))].append(page)
+
+    for source in ("N", "D"):
+        for page_number, text in data["sources"][source]["textPages"].items():
+            ranges = ranges_by_page[(source, page_number)]
+            text, changed = restore_text(text, ranges)
+            count += changed
+            data["sources"][source]["textPages"][page_number] = text
     return count
 
 

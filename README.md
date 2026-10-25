@@ -12,12 +12,18 @@ alteração, do índice original em `fonte/ifa-indice-completo-final.html`.
 
 ## Transcrições
 
-`transcricao.html` apresenta por odu o texto extraído em listas independentes de Naveira e Delgado,
-sem presumir que histórias em páginas semelhantes sejam correspondentes. A aba Ewé mostra as páginas
-do Verger indexadas por espécie. Cada página transcrita tem um link para o leitor PDF. A separação
-automática estabelece limites de odu e preserva a paginação; ela não determina com segurança o
-começo e o fim de cada narrativa individual, que ainda exigem conferência antes de uma publicação
-como transcrições separadas por patakí.
+`transcricao.html` reúne o texto extraído de todas as páginas de Naveira, Delgado e Verger. A aba
+“Patakís” e a aba “Obras e subitens” mostram cada título junto do trecho correspondente, agrupado por
+odu e separado por fonte. “Orixás” reúne referências por entidade, incluindo as entradas “nasce neste
+odu”; “Ewé” reúne os trechos por espécie e encantamentos indexados. “Texto completo” permite trocar de
+obra, navegar por página e pesquisar no texto. Cada trecho tem link para o leitor PDF e os indicadores
+mostram a cobertura das páginas e dos títulos localizados. As fontes permanecem identificadas
+separadamente.
+
+Os workers em `tools/workers/` vinculam títulos do índice às páginas indicadas e recortam o trecho até
+o próximo título localizado. Títulos ausentes, repetidos ou sobrepostos ficam marcados para conferência
+manual no PDF. As transcrições separadas são propostas baseadas no índice e no texto extraído; não
+substituem a revisão de OCR e não confirmam sozinhas os limites semânticos de uma narrativa.
 
 Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 
@@ -25,11 +31,15 @@ Para regenerar a transcrição a partir dos PDFs reconhecíveis na raiz:
 node tools/transcrever.js
 ```
 
-O extrator valida os 256 pontos de início de odu de cada tratado, separa o texto até o próximo odu e
-grava checkpoints locais para retomar uma execução interrompida. O estado temporário fica em
-`tools/.transcricao-state/` e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá
-de Ewé vêm do índice; os trechos do Verger são extraídos das páginas mapeadas. O resultado é
-`assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.
+O extrator valida os 256 pontos de início de odu de cada tratado e extrai o texto reconhecível de todas
+as páginas dos três PDFs, incluindo as 618 páginas do Verger. Os textos de cada fonte são armazenados
+uma única vez; os trechos por título, o agrupamento por odu e o índice de Ewé referenciam essas páginas.
+Checkpoints locais
+permitem retomar uma execução interrompida. O estado temporário fica em `tools/.transcricao-state/`
+e não é publicado. Os nomes científicos, famílias, páginas e nomes yorùbá de Ewé vêm do índice.
+O resultado é `assets/transcricoes.json.gz`; o navegador o descompacta ao abrir `transcricao.html`.
+“Todas as páginas” significa que todas foram processadas: páginas sem camada de texto reconhecível
+fazem o extrator parar com erro, e o texto extraído ainda pode conter falhas de OCR.
 
 Como a transcrição é carregada via `fetch`, abra o site por HTTP, não diretamente por `file://`.
 Para testar localmente, use `python3 -m http.server 8000` e visite
@@ -41,7 +51,8 @@ Depois de gerar `assets/transcricoes.json.gz`, execute `python3 tools/restaurar_
 `assets/yoruba-tonos-revisao.json` com sugestões apoiadas pelos nomes yorùbá indexados no Verger.
 Como uma mesma palavra sem marcas pode ter leituras diferentes, sugestões não são aplicadas sem
 revisão. Inclua apenas substituições confirmadas em `tools/yoruba-tonos-aprovados.json` e execute
-`python3 tools/restaurar_tons.py --apply-approved` para aplicá-las.
+`python3 tools/restaurar_tons.py --apply-approved` para aplicá-las ao texto integral e aos trechos
+segmentados.
 
 ## 1. Colocar os PDFs
 
@@ -107,11 +118,11 @@ Antes, saiba que:
 
 ```
 index.html                 índice (todas as abas do original)
-transcricao.html           transcrições por odu e Ewé
+transcricao.html           biblioteca de transcrições por título, tema e página
 leitor.html                leitor de PDF embutido
 assets/app.js              lógica do índice + geração dos links de página
 assets/data.js             dados do índice (gerado — não editar à mão)
-assets/transcricoes.json.gz texto transcrito comprimido (gerado)
+assets/transcricoes.json.gz texto extraído comprimido (gerado)
 assets/transcricoes.js     carrega e descompacta o texto no navegador
 assets/transcricao.js      interface das transcrições
 assets/leitor.js|.css      leitor
@@ -120,7 +131,8 @@ assets/fonts.css, fonts/   IBM Plex Sans/Mono e Fraunces locais (SIL OFL)
 vendor/pdfjs/              PDF.js 3.11.174 (Apache-2.0)
 fonte/                     índice original (fonte dos dados)
 tools/extrair_dados.py     regenera assets/data.js a partir do índice original
-tools/transcrever.js       extrai texto dos PDFs por odu e por página do Ewé
+tools/transcrever.js       extrai texto e gera os mapas de trechos indexados
+tools/workers/             segmentação de patakís, subitens, orixás e Ewé
 tools/restaurar_tons.py    worker de sugestões e aplicação revisada de tons
 pdf/                       seus PDFs (fora do git)
 ```

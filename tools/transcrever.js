@@ -5,6 +5,10 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const zlib = require('node:zlib');
 const pdfjs = require('../vendor/pdfjs/pdf.min.js');
+const { buildPatakiEntries } = require('./workers/patakis');
+const { buildSubitemEntries } = require('./workers/subitens');
+const { buildEweEntries } = require('./workers/ewe');
+const { buildOrishaEntries } = require('./workers/orixas');
 
 const ROOT = path.resolve(__dirname, '..');
 const INPUT = path.join(ROOT, 'fonte', 'ifa-indice-completo-final.html');
@@ -139,15 +143,8 @@ async function main() {
     }
   }
 
-  const ewePages = new Set([561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571,
-    572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586,
-    587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601,
-    602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616,
-    617, 618]);
-  for (const row of index.ewe.rows) for (const page of row[2]) ewePages.add(page);
-
   const result = {
-    version: 1,
+    version: 2,
     sources: {},
     odus: index.odus.map(odu => ({
       cell: odu.c,
@@ -156,34 +153,31 @@ async function main() {
     })),
     ewe: {
       rows: index.ewe.rows,
-      pages: {}
     }
   };
   const byCell = new Map(result.odus.map(odu => [odu.cell, odu]));
 
   for (const [code, metadata] of Object.entries(DOCS)) {
     const doc = await loadPdf(code, metadata);
-    result.sources[code] = { title: metadata.title, pages: doc.numPages, file: metadata.file };
+    result.sources[code] = {
+      title: metadata.title,
+      pages: doc.numPages,
+      file: metadata.file,
+      textPages: {}
+    };
     const checkpoint = loadPageCheckpoint(code);
     const sourceSession = session.sources[code] ??= { status: 'pending', pagesDone: 0 };
     sourceSession.status = 'running';
-    sourceSession.totalPages = code === 'V' ? ewePages.size :
-      oduPages[code].reduce((total, section) => total + section.end - section.page + 1, 0);
+    sourceSession.totalPages = doc.numPages;
     sourceSession.pagesDone = checkpoint.pages.size;
     saveSession(session);
-    const wantedPages = new Set();
-    if (code === 'V') {
-      if (doc.numPages !== 618) throw new Error(`Verger: esperado 618 páginas; recebido ${doc.numPages}`);
-      for (const page of ewePages) {
-        if (!Number.isInteger(page) || page < 1 || page > doc.numPages) {
-          throw new Error(`Verger: referência de página inválida: ${page}`);
-        }
-        wantedPages.add(page);
-      }
-    } else {
-      for (const section of oduPages[code]) {
-        for (let page = section.page; page <= section.end; page++) wantedPages.add(page);
-      }
+    if (code === 'V' && doc.numPages !== 618) {
+      throw new Error(`Verger: esperado 618 páginas; recebido ${doc.numPages}`);
+    }
+    const wantedPages = new Set(
+      Array.from({ length: doc.numPages }, (_, index) => index + 1)
+    );
+    if (code !== 'V') {
       for (const section of oduPages[code]) {
         const text = await getPageText(doc, section.page);
         if (!normalize(text).includes(normalize(section.title))) {
@@ -211,19 +205,19 @@ async function main() {
         saveSession(session);
       }
       pageTexts[page] = text;
+      result.sources[code].textPages[page] = text;
       if (code !== 'V') {
         const section = oduPages[code].find(item => page >= item.page && page <= item.end);
-        byCell.get(section.cell).sources[code].pages.push({ page, text: pageTexts[page] });
+        if (section) byCell.get(section.cell).sources[code].pages.push(page);
       }
     }
     if (code === 'V') {
-      result.ewe.pages = pageTexts;
       result.ewe.rows = index.ewe.rows.map(row => ({
         scientific: row[0],
         family: row[1],
         pages: row[2],
         yoruba: row[3],
-        purposes: row[4],
+        purposes: row[4].map(purpose => index.ewe.val[purpose]),
         details: row[5]
       }));
     }
@@ -234,6 +228,27 @@ async function main() {
     saveSession(session);
     console.log(`${metadata.title}: ${wantedPages.size} páginas extraídas`);
   }
+
+  result.entries = {
+    patakis: buildPatakiEntries(index, result.sources),
+    subitems: buildSubitemEntries(index, result.sources)
+  };
+  result.entries.ewe = buildEweEntries(index, result.sources);
+  result.orishas = buildOrishaEntries(
+    index,
+    result.sources,
+    [...result.entries.patakis, ...result.entries.subitems]
+  );
+  for (const [label, entries] of Object.entries(result.entries)) {
+    const lists = Array.isArray(entries) ? [entries] : Object.values(entries);
+    for (const list of lists) {
+      const matched = list.filter(entry => entry.status === 'matched').length;
+      console.log(`${label}: ${matched}/${list.length} títulos localizados no texto`);
+    }
+  }
+  console.log(`Orixás: ${result.orishas.entities.length} entidades, ` +
+    `${result.orishas.entities.reduce((total, entity) => total + entity.groups.reduce(
+      (sum, group) => sum + group.items.length, 0), 0)} referências indexadas`);
 
   const output = zlib.gzipSync(JSON.stringify(result), { level: 9 });
   fs.writeFileSync(OUTPUT, output);
