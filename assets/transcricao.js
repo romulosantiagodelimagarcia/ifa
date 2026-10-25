@@ -114,7 +114,7 @@
         );
       }
       $('odu-coverage').textContent =
-        'Cada trecho começa no título indexado e termina antes do próximo título detectado nesse odu. Itens com aviso precisam de conferência no PDF.';
+        'Quando localizado, o trecho começa no título indexado e termina antes do próximo título detectado nesse odu. Itens com aviso precisam de conferência no PDF.';
       history.replaceState(null, '', `#odu=${encodeURIComponent(odu.cell)}`);
     }
 
